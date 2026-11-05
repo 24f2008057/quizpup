@@ -5,7 +5,7 @@ from flask import request, jsonify
 from flask_login import login_required, current_user
 from google.genai import types
 
-from extensions import db, csrf, limiter
+from extensions import db, limiter
 from models import FlashcardDeck
 from flashcard_data import PRELOADED_DECKS
 from services.gemini_service import call_gemini, GeminiCooldown
@@ -151,7 +151,6 @@ def view_flashcard_deck(deck_id):
 
 @flashcards_bp.route('/api/flashcards/my-decks/<int:deck_id>', methods=['DELETE'])
 @login_required
-@csrf.exempt
 def delete_flashcard_deck(deck_id):
     deck = FlashcardDeck.query.filter_by(id=deck_id, user_id=current_user.id).first()
     if not deck:

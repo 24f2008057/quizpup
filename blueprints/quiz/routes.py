@@ -12,7 +12,7 @@ from werkzeug.utils import secure_filename
 from pypdf import PdfReader
 from google.genai import types
 
-from extensions import db, csrf, limiter
+from extensions import db, limiter
 from models import QuizSession, QuizQuestion
 from services.gemini_service import call_gemini, quiz_task, GeminiCooldown, MAX_PARALLEL
 from services.security_utils import is_allowed_upload_content
@@ -20,6 +20,9 @@ from services.security_utils import is_allowed_upload_content
 from . import quiz_bp
 
 logger = logging.getLogger("quizpup")
+
+QUIZ_SOURCE_MAX_PDF_PAGES = 200
+QUIZ_SOURCE_MAX_CHARS = 40000
 
 
 @quiz_bp.route('/generate-quiz', methods=['POST'])
@@ -57,8 +60,13 @@ def generate_quiz():
             return jsonify({"error": "That file's contents don't match a valid PDF."}), 400
         try:
             reader = PdfReader(filepath)
+            if len(reader.pages) > QUIZ_SOURCE_MAX_PDF_PAGES:
+                os.remove(filepath)
+                return jsonify({"error": f"That PDF has {len(reader.pages)} pages. Please upload {QUIZ_SOURCE_MAX_PDF_PAGES} pages or fewer."}), 400
             for page in reader.pages:
                 source_text += page.extract_text() or ""
+                if len(source_text) >= QUIZ_SOURCE_MAX_CHARS:
+                    break
             os.remove(filepath)
         except Exception:
             logger.exception("Failed to parse uploaded quiz-source PDF")
@@ -346,7 +354,6 @@ def submit_quiz(session_id):
 
 @quiz_bp.route('/api/quiz/<int:session_id>/save-progress', methods=['POST'])
 @login_required
-@csrf.exempt
 def save_quiz_progress(session_id):
     session_instance = QuizSession.query.get_or_404(session_id)
     if session_instance.user_id != current_user.id:
@@ -355,8 +362,17 @@ def save_quiz_progress(session_id):
     if session_instance.is_completed:
         return jsonify({"success": True, "message": "Quiz already completed"})
 
-    data = request.json or {}
+    data = request.get_json(silent=True)
+    if data is None:
+        try:
+            data = json.loads(request.form.get('payload', '{}'))
+        except (TypeError, ValueError):
+            data = {}
+    if not isinstance(data, dict):
+        data = {}
     answers = data.get('answers', {})
+    if not isinstance(answers, dict):
+        answers = {}
     seconds_left = data.get('seconds_remaining')
 
     if seconds_left is not None:
@@ -405,7 +421,6 @@ def get_quiz_hint(session_id, question_id):
 
 @quiz_bp.route('/api/quiz/<int:session_id>', methods=['DELETE'])
 @login_required
-@csrf.exempt
 def delete_quiz_session(session_id):
     try:
         session_instance = QuizSession.query.get_or_404(session_id)

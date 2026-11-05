@@ -10,6 +10,8 @@ from datetime import datetime, timedelta, timezone
 from google import genai
 from google.genai import types
 
+from config import IS_PRODUCTION
+
 try:
     from zoneinfo import ZoneInfo
     _PACIFIC = ZoneInfo("America/Los_Angeles")
@@ -18,7 +20,11 @@ except Exception:
 
 logger = logging.getLogger("quizpup")
 
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "YOUR_ACTUAL_GEMINI_API_KEY_HERE")
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+if not GEMINI_API_KEY:
+    if IS_PRODUCTION:
+        raise RuntimeError("GEMINI_API_KEY environment variable is not set. Refusing to start in production.")
+    GEMINI_API_KEY = "missing-gemini-key-dev-only"
 ai_client = genai.Client(api_key=GEMINI_API_KEY)
 
 

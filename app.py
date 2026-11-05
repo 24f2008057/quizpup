@@ -28,7 +28,7 @@ from blueprints.quiz import quiz_bp
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
-    app.config['TEMPLATES_AUTO_RELOAD'] = True
+    app.config['TEMPLATES_AUTO_RELOAD'] = not IS_PRODUCTION
 
     if IS_PRODUCTION:
         app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)

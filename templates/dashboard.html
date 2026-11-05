@@ -555,17 +555,23 @@
                 payload.decks.forEach(deck => {
                     const item = document.createElement('div');
                     item.className = "bg-[#F3D9DC] border border-[#B49286] text-[#744253] rounded-xl p-2.5 elevate-sm lift-on-hover hover:border-[#744253] active:scale-[0.98] active:border-[#744253] transition duration-100 flex items-center justify-between gap-2";
-                    const safeTopic = (deck.topic || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                    const openBtn = document.createElement('button');
+                    openBtn.className = "flex-1 text-left font-bold text-xs truncate cursor-pointer hover:underline";
+                    openBtn.title = deck.topic || '';
+                    openBtn.appendChild(document.createTextNode(`${deck.topic || ''} `));
+                    const countSpan = document.createElement('span');
+                    countSpan.className = "text-[10px] opacity-70 font-mono";
+                    countSpan.textContent = `(${Number(deck.count) || 0})`;
+                    openBtn.appendChild(countSpan);
+                    openBtn.addEventListener('click', () => openSavedDeck(deck.id, deck.topic));
                     item.innerHTML = `
-                        <button onclick="openSavedDeck(${deck.id}, '${safeTopic}')" class="flex-1 text-left font-bold text-xs truncate cursor-pointer hover:underline" title="${deck.topic}">
-                             ${deck.topic} <span class="text-[10px] opacity-70 font-mono">(${deck.count})</span>
-                        </button>
-                        <button onclick="deleteFlashcardDeck(${deck.id}, event)" title="Delete Flashcard Deck" class="btn-danger-ghost p-1.5 rounded-lg cursor-pointer flex-shrink-0">
+                        <button onclick="deleteFlashcardDeck(${Number(deck.id)}, event)" title="Delete Flashcard Deck" class="btn-danger-ghost p-1.5 rounded-lg cursor-pointer flex-shrink-0">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
                         </button>
                     `;
+                    item.prepend(openBtn);
                     list.appendChild(item);
                 });
                 section.classList.remove('hidden');
@@ -575,6 +581,12 @@
         } catch (e) {
             section.classList.add('hidden');
         }
+    }
+
+    function escapeHtml(value) {
+        const holder = document.createElement('div');
+        holder.textContent = String(value == null ? '' : value);
+        return holder.innerHTML;
     }
 
     async function deleteFlashcardDeck(deckId, event) {
@@ -637,7 +649,7 @@
             const chapterCount = fcCurrentSubjects[subject].length;
             const btn = document.createElement('button');
             btn.className = "text-left bg-[#F3D9DC] border border-[#B49286] text-[#744253] font-bold py-3 px-4 text-sm rounded-xl hover:bg-[#744253] hover:text-white active:scale-[0.97] active:bg-[#744253] active:text-white transition duration-100 elevate-sm flex justify-between items-center";
-            btn.innerHTML = `<span>${subject}</span><span class="text-xs font-mono opacity-70">${chapterCount} chapters</span>`;
+            btn.innerHTML = `<span>${escapeHtml(subject)}</span><span class="text-xs font-mono opacity-70">${chapterCount} chapters</span>`;
             btn.onclick = () => openSubject(subject);
             list.appendChild(btn);
         });
@@ -653,7 +665,7 @@
         fcCurrentSubjects[subject].forEach(({ chapter, count }) => {
             const btn = document.createElement('button');
             btn.className = "text-left bg-[#F3D9DC] border border-[#B49286] text-[#744253] font-bold py-3 px-4 text-sm rounded-xl hover:bg-[#744253] hover:text-white active:scale-[0.97] active:bg-[#744253] active:text-white transition duration-100 elevate-sm flex justify-between items-center";
-            btn.innerHTML = `<span>${chapter}</span><span class="text-xs font-mono opacity-70">${count} cards</span>`;
+            btn.innerHTML = `<span>${escapeHtml(chapter)}</span><span class="text-xs font-mono opacity-70">${count} cards</span>`;
             btn.onclick = () => openChapter(chapter);
             list.appendChild(btn);
         });
@@ -969,7 +981,7 @@
         if (note.status === 'processing') {
             return `
                 <div class="min-w-0">
-                    <p class="text-xs font-bold text-[#744253] truncate">${note.title}</p>
+                    <p class="text-xs font-bold text-[#744253] truncate">${escapeHtml(note.title)}</p>
                     <p class="text-[10px] text-amber-600">⏳ Processing... (${dateStr})</p>
                 </div>
                 <div class="flex items-center gap-1 shrink-0">
@@ -981,7 +993,7 @@
         if (note.status === 'failed') {
             return `
                 <div class="min-w-0">
-                    <p class="text-xs font-bold text-[#744253] truncate">${note.title}</p>
+                    <p class="text-xs font-bold text-[#744253] truncate">${escapeHtml(note.title)}</p>
                     <p class="text-[10px] text-red-500">Failed (${dateStr})</p>
                 </div>
                 <div class="flex items-center gap-1 shrink-0">
@@ -992,7 +1004,7 @@
         }
         return `
             <div class="min-w-0">
-                <p class="text-xs font-bold text-[#744253] truncate">${note.title}</p>
+                <p class="text-xs font-bold text-[#744253] truncate">${escapeHtml(note.title)}</p>
                 <p class="text-[10px] text-slate-400">${dateStr}</p>
             </div>
             <div class="flex items-center gap-2 shrink-0">

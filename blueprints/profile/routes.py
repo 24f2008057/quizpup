@@ -2,11 +2,14 @@ from datetime import datetime, timedelta
 
 from flask import render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
+from sqlalchemy import func
 
 from extensions import db, limiter
 from models import User
 from services.email_service import send_email, OTP_VALID_MINUTES
-from services.security_utils import generate_otp, otp_matches, clear_email_change_state
+from services.security_utils import (
+    generate_otp, otp_matches, clear_email_change_state, is_valid_email, normalize_email
+)
 
 from . import profile_bp
 
@@ -46,9 +49,9 @@ def edit_profile():
 @login_required
 @limiter.limit("5 per hour")
 def request_email_change():
-    new_email = (request.form.get('new_email') or '').strip().lower()
+    new_email = normalize_email(request.form.get('new_email'))
 
-    if not new_email or '@' not in new_email:
+    if not is_valid_email(new_email):
         flash('Please enter a valid email address.', 'danger')
         return redirect(url_for('profile.edit_profile_page'))
 
@@ -56,7 +59,7 @@ def request_email_change():
         flash('That is already your current email address.', 'danger')
         return redirect(url_for('profile.edit_profile_page'))
 
-    if User.query.filter(User.email.ilike(new_email)).first():
+    if User.query.filter(func.lower(User.email) == new_email).first():
         flash('That email address is already in use by another account.', 'danger')
         return redirect(url_for('profile.edit_profile_page'))
 
@@ -97,7 +100,7 @@ def verify_email_change():
         flash('Incorrect code. Please try again.', 'danger')
         return redirect(url_for('profile.edit_profile_page'))
 
-    if User.query.filter(User.email.ilike(current_user.pending_email), User.id != current_user.id).first():
+    if User.query.filter(func.lower(User.email) == current_user.pending_email.lower(), User.id != current_user.id).first():
         flash('That email address was just claimed by another account. Please try a different address.', 'danger')
         clear_email_change_state(current_user)
         db.session.commit()

@@ -35,8 +35,10 @@ def send_email(target_email, subject, html_body):
         )
         if response.status_code in (200, 201):
             return True
+        logger.warning("Brevo rejected an email send with HTTP status %s", response.status_code)
         return False
     except Exception:
+        logger.exception("Email send to the Brevo API failed")
         return False
 
 

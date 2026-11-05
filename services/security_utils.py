@@ -11,14 +11,40 @@ PASSWORD_REQUIREMENTS_MESSAGE = (
 )
 
 
-def is_allowed_upload_content(filepath, expect_pdf):
+EMAIL_PATTERN = re.compile(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
+MAX_EMAIL_LENGTH = 150
+
+
+def is_valid_email(email):
+    return bool(email) and len(email) <= MAX_EMAIL_LENGTH and bool(EMAIL_PATTERN.match(email))
+
+
+def normalize_email(email):
+    return (email or '').strip().lower()
+
+
+def detect_upload_mime(filepath):
     try:
-        h = open(filepath, 'rb').read(12)
-        return h.startswith(b'%PDF-') if expect_pdf else (
-            h.startswith(b'\xff\xd8\xff') or h.startswith(b'\x89PNG\r\n\x1a\n') or (h.startswith(b'RIFF') and h[8:12] == b'WEBP')
-        )
+        with open(filepath, 'rb') as f:
+            h = f.read(12)
     except Exception:
+        return None
+    if h.startswith(b'%PDF-'):
+        return 'application/pdf'
+    if h.startswith(b'\xff\xd8\xff'):
+        return 'image/jpeg'
+    if h.startswith(b'\x89PNG\r\n\x1a\n'):
+        return 'image/png'
+    if h.startswith(b'RIFF') and h[8:12] == b'WEBP':
+        return 'image/webp'
+    return None
+
+
+def is_allowed_upload_content(filepath, expect_pdf):
+    detected = detect_upload_mime(filepath)
+    if detected is None:
         return False
+    return detected == 'application/pdf' if expect_pdf else detected != 'application/pdf'
 
 
 def generate_otp():

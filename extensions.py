@@ -1,3 +1,5 @@
+import hmac
+
 from flask import request, jsonify, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
@@ -20,7 +22,18 @@ login_manager.login_view = 'auth.login'
 @login_manager.user_loader
 def load_user(user_id):
     from models import User
-    return db.session.get(User, int(user_id))
+    raw_id, _, fingerprint = str(user_id).partition('.')
+    if not fingerprint:
+        return None
+    try:
+        user = db.session.get(User, int(raw_id))
+    except (TypeError, ValueError):
+        return None
+    if user is None:
+        return None
+    if not hmac.compare_digest(fingerprint, user.session_fingerprint()):
+        return None
+    return user
 
 
 @login_manager.unauthorized_handler

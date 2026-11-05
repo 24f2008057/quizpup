@@ -1,5 +1,6 @@
 import secrets
-from flask import g
+from flask import g, request
+from flask_login import current_user
 
 from config import IS_PRODUCTION
 from services.supabase_client import SUPABASE_URL, SUPABASE_ANON_KEY
@@ -40,6 +41,8 @@ def register_security_hooks(app):
         response.headers['Permissions-Policy'] = 'camera=(), microphone=(), geolocation=(), payment=()'
         response.headers['Content-Security-Policy'] = csp
         response.headers['Cross-Origin-Opener-Policy'] = 'same-origin'
+        if current_user.is_authenticated and not request.path.startswith('/static/'):
+            response.headers['Cache-Control'] = 'no-store'
         if IS_PRODUCTION:
             response.headers['Strict-Transport-Security'] = 'max-age=63072000; includeSubDomains; preload'
         return response

@@ -1,3 +1,4 @@
+import hashlib
 from datetime import datetime
 from flask_login import UserMixin
 
@@ -22,6 +23,12 @@ class User(UserMixin, db.Model):
     email_change_otp_expires = db.Column(db.DateTime, nullable=True)
     supabase_uid = db.Column(db.String(255), unique=True, nullable=True)
     auth_provider = db.Column(db.String(20), default="password", nullable=True)
+
+    def session_fingerprint(self):
+        return hashlib.sha256((self.password_hash or '').encode('utf-8')).hexdigest()[:16]
+
+    def get_id(self):
+        return f"{self.id}.{self.session_fingerprint()}"
 
 class QuizSession(db.Model):
     id = db.Column(db.Integer, primary_key=True)

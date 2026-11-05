@@ -9,9 +9,9 @@ from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from pypdf import PdfReader
 
-from extensions import db, csrf, limiter
+from extensions import db, limiter
 from models import SuperNote
-from services.security_utils import is_allowed_upload_content, ALLOWED_NOTE_EXTENSIONS
+from services.security_utils import is_allowed_upload_content, detect_upload_mime, ALLOWED_NOTE_EXTENSIONS
 from services.supernotes_service import run_supernotes_job, SUPERNOTE_MAX_PDF_PAGES
 
 from . import notes_bp
@@ -36,7 +36,6 @@ def process_study_notes():
 
     filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], f"{uuid.uuid4().hex}_{filename}")
     is_pdf = filename.lower().endswith('.pdf')
-    file_mime_type = file.content_type
 
     try:
         file.save(filepath)
@@ -47,6 +46,8 @@ def process_study_notes():
     if not is_allowed_upload_content(filepath, is_pdf):
         os.remove(filepath)
         return jsonify({"success": False, "error": "That file's contents don't match a supported PDF or image format."}), 400
+
+    file_mime_type = detect_upload_mime(filepath)
 
     if is_pdf:
         try:
@@ -119,7 +120,6 @@ def supernotes_view(note_id):
 
 @notes_bp.route('/api/study/notes/<int:note_id>', methods=['DELETE'])
 @login_required
-@csrf.exempt
 def delete_supernote(note_id):
     note = SuperNote.query.filter_by(id=note_id, user_id=current_user.id).first()
     if not note:

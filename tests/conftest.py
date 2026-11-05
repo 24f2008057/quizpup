@@ -38,8 +38,14 @@ def app():
     _limiter.enabled = False
 
     yield flask_app
+    with flask_app.app_context():
+        _db.session.remove()
+        _db.engine.dispose()
     os.close(_TEST_DB_FD)
-    os.unlink(_TEST_DB_PATH)
+    try:
+        os.unlink(_TEST_DB_PATH)
+    except PermissionError:
+        pass
 
 
 @pytest.fixture(autouse=True)
