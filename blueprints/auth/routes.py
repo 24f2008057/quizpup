@@ -216,7 +216,7 @@ def logout():
     logout_user()
     session.clear()
 
-    response = make_response(redirect(url_for('auth.login')))
+    response = make_response(redirect(url_for('auth.index')))
     response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
     response.headers['Pragma'] = 'no-cache'
     response.headers['Expires'] = '0'
