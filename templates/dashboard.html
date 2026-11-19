@@ -1,52 +1,47 @@
 {% extends 'base.html' %}
 {% block content %}
+{% set view_titles = {'flashcards': 'Flashcards', 'study': 'Notes', 'account': 'Premium', 'profile': 'Your profile', 'edit_profile': 'Edit profile'} %}
 
-<div
-    class="bg-[#D7BEA8] px-6 py-3 rounded-b-[2.5rem] flex items-center justify-between elevate-sm border-b border-[#B49286]">
-    <div class="w-35 h-35 flex items-center justify-center transition duration-300 hover:scale-105">
-        <img src="{{ url_for('static', filename='images/mascot-happy-sitting.png') }}"
-            class="max-h-full max-w-full object-contain drop-shadow-sm" alt="Mascot">
+<header class="flex items-center gap-4 px-5 pt-2 pb-1">
+    {% if view == 'home' %}
+    <img src="{{ url_for('static', filename='images/mascot-happy-sitting.png') }}" class="h-20 w-auto object-contain" alt="">
+    <div class="min-w-0">
+        <p class="text-sm text-ink-soft">Welcome back</p>
+        <h1 class="truncate">Hello, {{ current_user.username }}</h1>
     </div>
-
-    <div class="text-right flex flex-col justify-center select-none">
-        <h2 class="text-2xl font-serif font-bold text-[#744253] leading-tight">Hello,</h2>
-        <p class="text-lg font-medium text-[#744253] opacity-90 -mt-0.5">{{ current_user.username }}</p>
-    </div>
-</div>
+    {% else %}
+    <h1>{{ view_titles.get(view, 'QuizPup') }}</h1>
+    {% endif %}
+</header>
 
 <div class="p-5 space-y-6">
     {% if view == 'home' %}
-    <div id="homeFeedSection" class="space-y-6">
-        <div class="bg-[#C78283] p-4 rounded-3xl flex justify-between items-center elevate-sm">
-            <h3 class="text-2xl font-serif font-bold text-white pl-2">Past Quizzes</h3>
+    <div id="homeFeedSection" class="space-y-5">
+        <div class="flex justify-between items-center gap-3">
+            <h2>Your quizzes</h2>
             <button onclick="switchToQuizForm()"
-                class="btn-primary text-xs font-semibold px-4 py-2.5 rounded-full elevate-md cursor-pointer">
-                Create New Quiz
+                class="btn-primary text-sm font-semibold px-5 py-2.5 rounded-pill cursor-pointer">
+                New quiz
             </button>
         </div>
 
-        <div class="space-y-4">
+        <div class="space-y-3">
             {% for q in past_quizzes %}
             <div id="quiz-card-{{ q.id }}"
-                class="bg-[#F3D9DC] border border-[#B49286] p-5 rounded-3xl flex justify-between items-center hover:bg-[#EBC4C8] transition elevate-sm lift-on-hover group">
-                <a href="/quiz/{{ q.id }}" class="flex-1 space-y-1 pr-3">
-                    <h4 class="font-bold text-[#744253] text-lg group-hover:underline">{{ q.topic }}</h4>
-                    <div class="flex gap-4 text-xs font-medium text-[#744253] opacity-80">
-                        <span>Questions: {{ q.total_questions }}</span>
-                        <span>Time: {{ q.duration_minutes }}m</span>
-                    </div>
+                class="bg-surface border border-line p-4 rounded-card flex justify-between items-center elevate-sm lift-on-hover group">
+                <a href="/quiz/{{ q.id }}" class="flex-1 min-w-0 space-y-1 pr-3">
+                    <h3 class="text-lg font-semibold text-ink truncate group-hover:underline">{{ q.topic }}</h3>
+                    <p class="text-sm text-ink-soft">{{ q.total_questions }} questions, {{ q.duration_minutes }} min</p>
                 </a>
-                <div class="flex items-center gap-3">
-                    <a href="/quiz/{{ q.id }}" class="text-right">
-                        <span
-                            class="block text-xs font-bold text-[#744253] opacity-70 uppercase tracking-wider">Score:</span>
-                        <span class="text-xl font-black text-[#744253] font-mono">{{ q.score }}/{{ q.total_questions
-                            }}</span>
+                <div class="flex items-center gap-2">
+                    <a href="/quiz/{{ q.id }}" class="text-right px-2">
+                        <span class="block text-xs text-ink-soft">Score</span>
+                        <span class="text-xl font-semibold text-plum tabular-nums">{{ q.score }}/{{ q.total_questions }}</span>
                     </a>
-                    <button onclick="deleteQuizSession({{ q.id }}, event)" title="Delete Quiz"
-                        class="btn-danger-ghost p-2 rounded-xl cursor-pointer">
+                    <button onclick="deleteQuizSession({{ q.id }}, event)" title="Delete quiz" aria-label="Delete quiz {{ q.topic }}"
+                        class="btn-danger-ghost h-11 w-11 flex items-center justify-center rounded-control cursor-pointer">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor">
+                            stroke="currentColor" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                         </svg>
@@ -55,45 +50,41 @@
             </div>
 
             {% else %}
-            <div class="text-center py-12 bg-slate-50 border border-dashed border-slate-200 rounded-3xl">
-                <p class="text-sm text-slate-400 font-medium">No Quizzes attempted yet.</p>
+            <div class="text-center py-12 px-6 bg-surface border border-dashed border-edge rounded-card space-y-2">
+                <p class="font-serif text-xl text-ink">No quizzes yet</p>
+                <p class="text-sm text-ink-soft">Pick a topic or upload a PDF, and your first quiz appears here.</p>
             </div>
             {% endfor %}
         </div>
     </div>
 
-    <div id="quizFormSection" class="hidden bg-white border border-[#B49286] rounded-3xl p-6 elevate-sm space-y-4">
-        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
-            <button onclick="switchToFeed()" class="text-xs font-bold text-[#744253] hover:underline">Back to
-                Feed</button>
-            <span class="text-xs uppercase font-mono tracking-widest text-[#B49286] font-bold">Quiz Setup</span>
+    <div id="quizFormSection" class="hidden bg-surface border border-line rounded-card p-6 elevate-sm space-y-4">
+        <div class="flex items-center justify-between pb-2 border-b border-line">
+            <button onclick="switchToFeed()" class="text-sm font-semibold text-plum hover:underline min-h-11">Back to quizzes</button>
         </div>
 
-        <div class="bg-[#C78283] p-3 rounded-2xl">
-            <h3 class="text-lg font-bold text-white text-center">Configure Quiz Parameters</h3>
-        </div>
+        <h2 class="text-xl">Set up your quiz</h2>
 
         <form id="quizGenForm" enctype="multipart/form-data" class="space-y-4">
             <div>
-                <label class="block text-xs font-bold text-[#744253] uppercase tracking-wider mb-1">Topic Quiz</label>
-                <input type="text" name="topic" placeholder="Type target topic name..."
-                    class="w-full border border-[#B49286] bg-[#FFFBFB] rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#C78283]">
+                <label for="quiz_topic" class="field-label">Topic</label>
+                <input type="text" id="quiz_topic" name="topic" placeholder="e.g., Thermodynamics…"
+                    class="w-full border border-edge bg-surface rounded-control p-3 text-sm focus:outline-none focus:ring-2 focus:ring-plum">
             </div>
 
             <div
-                class="border-2 border-dashed border-[#B49286] bg-[#F3D9DC]/30 rounded-xl p-4 text-center transition hover:bg-[#F3D9DC]/50">
-                <label class="block text-sm font-bold text-[#744253] cursor-pointer hover:underline">
-                    Upload Target PDF Document
+                class="border-2 border-dashed border-line bg-blush/30 rounded-control p-4 text-center transition hover:bg-blush/50">
+                <label class="block text-sm font-bold text-plum cursor-pointer hover:underline">
+                    Upload a PDF (optional)
                     <input type="file" name="pdf_file" accept=".pdf" class="hidden" id="pdfFileInput">
                 </label>
-                <p id="file-name" class="text-xs text-slate-400 mt-1">No file parsed yet</p>
+                <p id="file-name" class="text-xs text-ink-soft mt-1">No file chosen</p>
             </div>
 
             <div>
-                <label class="block text-xs font-bold text-[#744253] uppercase tracking-wider mb-1">Difficulty
-                    Mode</label>
-                <select name="difficulty"
-                    class="w-full border border-[#B49286] bg-white rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#C78283]">
+                <label for="quiz_difficulty" class="field-label">Difficulty</label>
+                <select id="quiz_difficulty" name="difficulty"
+                    class="w-full border border-edge bg-surface rounded-control p-3 text-sm focus:outline-none focus:ring-2 focus:ring-plum">
                     <option value="easy">Easy</option>
                     <option value="medium">Medium</option>
                     <option value="hard">Hard</option>
@@ -102,68 +93,63 @@
             </div>
 
             <div>
-                <label class="block text-xs font-bold text-[#744253] uppercase tracking-wider mb-1">Total
-                    Questions</label>
+                <label for="custom_q" class="field-label">Number of questions</label>
                 <div class="grid grid-cols-5 gap-1.5 mb-2">
                     {% for count in [10, 20, 30, 50, 100] %}
                     <button type="button" data-count="{{ count }}" onclick="setQCount(this.dataset.count)"
-                        class="border border-[#B49286] py-2 rounded-xl text-xs font-bold bg-[#D7BEA8] text-[#744253] hover:bg-[#B49286] hover:text-white transition elevate-sm">{{
+                        class="border border-line py-2 rounded-control text-xs font-bold bg-tan text-ink hover:bg-line hover:text-white transition elevate-sm">{{
                         count }}</button>
                     {% endfor %}
                 </div>
                 <input type="number" id="custom_q" name="total_questions" min="10" max="200" value="10"
-                    class="w-full border border-[#B49286] bg-[#FFFBFB] rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#C78283]">
+                    class="w-full border border-edge bg-surface rounded-control p-3 text-sm focus:outline-none focus:ring-2 focus:ring-plum">
             </div>
 
             <div>
-                <label class="block text-xs font-bold text-[#744253] uppercase tracking-wider mb-1">Duration
-                    (Minutes)</label>
-                <input type="number" name="duration" min="1" value="15"
-                    class="w-full border border-[#B49286] bg-[#FFFBFB] rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#C78283]">
+                <label for="quiz_duration" class="field-label">Time limit (minutes)</label>
+                <input type="number" id="quiz_duration" name="duration" min="1" value="15"
+                    class="w-full border border-edge bg-surface rounded-control p-3 text-sm focus:outline-none focus:ring-2 focus:ring-plum">
             </div>
 
             <button type="submit" id="genBtn"
-                class="btn-primary w-full font-bold py-3.5 rounded-xl elevate-md text-sm cursor-pointer">
-                Start Quiz
+                class="btn-primary w-full font-semibold min-h-12 rounded-control text-base cursor-pointer">
+                Start quiz
             </button>
         </form>
     </div>
 
     {% elif view == 'flashcards' %}
-    <div class="bg-white border border-[#B49286] rounded-3xl p-6 elevate-sm space-y-6">
-        <div class="bg-[#C78283] p-4 rounded-2xl text-center">
-            <h3 class="text-xl font-bold text-white font-serif">AI Flashcards</h3>
-            <p class="text-xs text-white/90 mt-0.5">Test active memory with standard exams or smart prompts</p>
-        </div>
+    <div class="bg-surface border border-line rounded-card p-6 elevate-sm space-y-6">
+        <p class="text-sm text-ink-soft">Start from a ready-made exam deck, or type any topic and build a new one.</p>
 
         <!-- STAGE 1: Home - exam decks + AI topic generator -->
         <div id="fcHomeStage" class="space-y-6">
             <div class="space-y-2">
-                <span class="block text-xs font-bold text-[#744253] uppercase tracking-wider">Preloaded Premium
+                <span class="block text-xs font-bold text-plum ">Preloaded Premium
                     Decks</span>
                 <div class="grid grid-cols-3 gap-2">
                     <button onclick="openExam('JEE')"
-                        class="bg-[#F3D9DC] border border-[#B49286] text-[#744253] font-bold py-3 text-xs rounded-xl hover:bg-[#744253] hover:text-white active:scale-[0.97] active:bg-[#744253] active:text-white transition duration-100 elevate-sm">JEE</button>
+                        class="bg-blush border border-line text-plum font-bold py-3 text-xs rounded-control hover:bg-plum hover:text-white active:scale-[0.97] active:bg-plum active:text-white transition duration-100 elevate-sm">JEE</button>
                     <button onclick="openExam('NEET')"
-                        class="bg-[#F3D9DC] border border-[#B49286] text-[#744253] font-bold py-3 text-xs rounded-xl hover:bg-[#744253] hover:text-white active:scale-[0.97] active:bg-[#744253] active:text-white transition duration-100 elevate-sm">NEET</button>
+                        class="bg-blush border border-line text-plum font-bold py-3 text-xs rounded-control hover:bg-plum hover:text-white active:scale-[0.97] active:bg-plum active:text-white transition duration-100 elevate-sm">NEET</button>
                     <button onclick="openExam('CAT')"
-                        class="bg-[#F3D9DC] border border-[#B49286] text-[#744253] font-bold py-3 text-xs rounded-xl hover:bg-[#744253] hover:text-white active:scale-[0.97] active:bg-[#744253] active:text-white transition duration-100 elevate-sm">CAT</button>
+                        class="bg-blush border border-line text-plum font-bold py-3 text-xs rounded-control hover:bg-plum hover:text-white active:scale-[0.97] active:bg-plum active:text-white transition duration-100 elevate-sm">CAT</button>
                 </div>
             </div>
 
-            <div class="border-t border-slate-100 pt-4 space-y-2">
-                <label class="block text-xs font-bold text-[#744253] uppercase tracking-wider">Generate flashcards of
+            <div class="border-t border-line pt-4 space-y-2">
+                <label for="fcTopicField" class="block text-sm font-semibold text-plum">Generate flashcards of
                     any topic</label>
                 <div class="flex gap-2">
-                    <input type="text" id="fcTopicField" placeholder="e.g., Organic chemistry structural equations..."
-                        class="flex-1 border border-[#B49286] bg-[#FFFBFB] rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#C78283]">
+                    <input type="text" id="fcTopicField" placeholder="e.g., Organic chemistry reactions…"
+                        class="flex-1 border border-edge bg-surface rounded-control p-3 text-sm focus:outline-none focus:ring-2 focus:ring-plum">
                     <button onclick="buildAIFlashcards()" id="fcGenBtn"
-                        class="btn-primary px-4 rounded-xl text-xs font-bold elevate-sm cursor-pointer flex items-center justify-center">Build</button>
+                        class="btn-primary px-4 rounded-control text-xs font-bold elevate-sm cursor-pointer flex items-center justify-center">Build</button>
                 </div>
             </div>
 
-            <div id="fcMyDecksSection" class="border-t border-slate-100 pt-4 space-y-2 hidden">
-                <span class="block text-xs font-bold text-[#744253] uppercase tracking-wider">Your Saved Flashcard
+            <div id="fcMyDecksSection" class="border-t border-line pt-4 space-y-2 hidden">
+                <span class="block text-xs font-bold text-plum ">Your Saved Flashcard
                     Decks</span>
                 <div id="fcMyDecksList" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5"></div>
             </div>
@@ -173,9 +159,9 @@
         <div id="fcPickerStage" class="hidden space-y-3">
             <div class="flex items-center justify-between">
                 <button onclick="fcPickerBack()"
-                    class="btn-secondary text-xs font-bold px-3 py-1.5 rounded-lg">Back</button>
-                <span id="fcPickerTitle" class="text-sm font-bold text-[#744253]"></span>
-                <span class="w-14"></span>
+                    class="btn-secondary text-sm font-semibold px-3 py-2 rounded-control">Back to exams</button>
+                <span id="fcPickerTitle" class="text-sm font-bold text-plum"></span>
+                <span class="w-2"></span>
             </div>
             <div id="fcPickerList" class="grid grid-cols-1 gap-2"></div>
         </div>
@@ -184,76 +170,72 @@
         <div id="flashcardDisplayStage" class="hidden space-y-4">
             <div class="flex items-center justify-between">
                 <button onclick="fcBackToChapters()"
-                    class="btn-secondary text-xs font-bold px-3 py-1.5 rounded-lg">Back</button>
-                <span id="fcActiveChapterLabel" class="text-sm font-bold text-[#744253]"></span>
-                <span class="w-14"></span>
+                    class="btn-secondary text-sm font-semibold px-3 py-2 rounded-control">Back to chapters</button>
+                <span id="fcActiveChapterLabel" class="text-sm font-bold text-plum"></span>
+                <span class="w-2"></span>
             </div>
             <div id="fcCardPress" class="deck-press-wrapper h-44 w-full">
                 <div id="fcCardStage" class="deck-view-perspective h-full w-full cursor-grab">
                     <div id="fcCardInner"
                         class="deck-inner-wrapper relative w-full h-full text-center transform-style-3d">
                         <div
-                            class="absolute inset-0 bg-[#F3D9DC] border border-[#B49286] rounded-2xl flex items-center justify-center p-4 backface-hidden-stage">
-                            <p id="cardFrontText" class="text-[#744253] font-bold text-sm"></p>
+                            class="absolute inset-0 bg-blush border border-line rounded-panel flex items-center justify-center p-4 backface-hidden-stage">
+                            <p id="cardFrontText" class="text-plum font-bold text-sm"></p>
                         </div>
                         <div
-                            class="absolute inset-0 bg-[#D7BEA8] border border-[#B49286] rounded-2xl flex items-center justify-center p-4 backface-hidden-stage face-rotate-y-180">
-                            <p id="cardBackText" class="text-[#744253] font-medium text-sm"></p>
+                            class="absolute inset-0 bg-tan border border-line rounded-panel flex items-center justify-center p-4 backface-hidden-stage face-rotate-y-180">
+                            <p id="cardBackText" class="text-plum font-medium text-sm"></p>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="flex justify-between items-center px-2">
                 <button onclick="navigateDeck(-1)"
-                    class="btn-secondary text-xs font-bold px-3 py-1.5 rounded-lg">Previous</button>
-                <span id="deckCounter" class="text-xs font-mono font-bold text-slate-500">0 / 0</span>
+                    class="btn-secondary text-xs font-bold px-3 py-1.5 rounded-control">Previous</button>
+                <span id="deckCounter" class="text-xs tabular-nums font-bold text-ink-soft">0 / 0</span>
                 <button onclick="navigateDeck(1)"
-                    class="btn-secondary text-xs font-bold px-3 py-1.5 rounded-lg">Next</button>
+                    class="btn-secondary text-xs font-bold px-3 py-1.5 rounded-control">Next</button>
             </div>
         </div>
     </div>
 
     {% elif view == 'study' %}
-    <div class="bg-white border border-[#B49286] rounded-3xl p-6 elevate-sm space-y-5">
-        <div class="bg-[#744253] p-4 rounded-2xl text-center">
-            <h3 class="text-xl font-bold text-white font-serif">AI SuperNotes & OCR</h3>
-            <p class="text-xs text-white/90 mt-0.5">Transform photos and pdfs of handwritten/digital notes into sharp
-                digital summaries</p>
-        </div>
+    <div class="bg-surface border border-line rounded-card p-6 elevate-sm space-y-5">
+        <p class="text-sm text-ink-soft">Upload photos or PDFs of handwritten or typed notes and get a clean summary you can download.</p>
 
         <form id="studyOcrForm" enctype="multipart/form-data" class="space-y-4">
             <div
-                class="border-2 border-dashed border-[#B49286] bg-[#FFFBFB] rounded-xl p-6 text-center transition hover:bg-slate-50">
-                <label class="block text-sm font-bold text-[#744253] cursor-pointer hover:underline">
+                class="border-2 border-dashed border-line bg-surface rounded-control p-6 text-center transition hover:bg-surface">
+                <label class="block text-sm font-bold text-plum cursor-pointer hover:underline">
                     Capture or Upload Notes (Images or PDF)
                     <input type="file" name="note_file" id="note_file_input" accept="image/*,.pdf" class="hidden">
                 </label>
-                <p id="note-file-name" class="text-xs text-slate-400 mt-1">No images or PDFs parsed yet</p>
+                <p id="note-file-name" class="text-xs text-ink-soft mt-1">No images or PDFs parsed yet</p>
             </div>
             <button type="submit" id="studyBtn"
-                class="btn-accent w-full font-bold py-3.5 rounded-xl text-sm elevate-md cursor-pointer">
+                class="btn-accent w-full font-bold py-3.5 rounded-control text-sm elevate-md cursor-pointer">
                 Process Notes
             </button>
-            <p id="studyStatusMsg" class="hidden text-xs text-center text-[#744253] font-medium"></p>
+            <p id="studyStatusMsg" class="hidden text-xs text-center text-plum font-medium"></p>
         </form>
 
-        <div id="ocrOutputContainer" class="hidden space-y-4 pt-4 border-t border-slate-100">
+        <div id="ocrOutputContainer" class="hidden space-y-4 pt-4 border-t border-line">
             <div>
-                <span class="block text-xs font-bold text-[#744253] uppercase tracking-wider mb-1">Digitized Core Text
+                <span class="block text-xs font-bold text-plum mb-1">Digitized Core Text
                     (OCR)</span>
                 <textarea id="rawOcrResult" readonly
-                    class="w-full h-32 text-xs p-3 bg-slate-50 border border-slate-200 rounded-xl font-mono text-slate-700 focus:outline-none"></textarea>
+                    class="w-full h-32 text-xs p-3 bg-surface border border-edge rounded-control tabular-nums text-ink"></textarea>
             </div>
             <div>
                 <div class="flex items-center justify-between mb-1">
-                    <span class="block text-xs font-bold text-[#744253] uppercase tracking-wider">SuperNotes
+                    <span class="block text-xs font-bold text-plum ">SuperNotes
                         Summary</span>
                     <button id="downloadNoteBtn"
-                        class="btn-primary text-xs font-bold px-3 py-1.5 rounded-lg cursor-pointer">Download
+                        class="btn-primary text-xs font-bold px-3 py-1.5 rounded-control cursor-pointer">Download
                         PDF</button>
                 </div>
                 <div id="formattedSummaryResult"
-                    class="summary-content max-w-none text-xs p-4 bg-[#F3D9DC]/40 border border-[#B49286] rounded-xl text-slate-800 leading-relaxed">
+                    class="summary-content max-w-none text-xs p-4 bg-blush/40 border border-line rounded-control text-ink leading-relaxed">
                 </div>
             </div>
         </div>
@@ -262,11 +244,11 @@
             #formattedSummaryResult h4 {
                 font-size: 0.95rem;
                 font-weight: 700;
-                color: #744253;
+                color: var(--color-plum);
                 margin-top: 14px;
                 margin-bottom: 4px;
                 padding-bottom: 4px;
-                border-bottom: 1px solid #B49286;
+                border-bottom: 1px solid var(--color-line);
             }
 
             #formattedSummaryResult h4:first-child {
@@ -276,7 +258,7 @@
             #formattedSummaryResult strong {
                 display: block;
                 font-weight: 700;
-                color: #744253;
+                color: var(--color-plum);
                 margin-top: 8px;
                 margin-bottom: 2px;
             }
@@ -292,43 +274,43 @@
             }
         </style>
 
-        <div class="pt-4 border-t border-slate-100 space-y-2">
-            <span class="block text-xs font-bold text-[#744253] uppercase tracking-wider">History</span>
+        <div class="pt-4 border-t border-line space-y-2">
+            <span class="block text-xs font-bold text-plum ">History</span>
             <div id="supernotesHistoryList" class="space-y-2">
-                <p class="text-xs text-slate-400">Loading history...</p>
+                <p class="text-xs text-ink-soft">Loading history...</p>
             </div>
         </div>
     </div>
 
     {% elif view == 'account' %}
-    <div class="bg-white border border-[#B49286] rounded-3xl p-8 elevate-sm text-center space-y-4 my-4">
-        <div class="w-20 h-20 mx-auto bg-[#F3D9DC] rounded-full flex items-center justify-center p-3 animate-bounce">
+    <div class="bg-surface border border-line rounded-card p-8 elevate-sm text-center space-y-4 my-4">
+        <div class="w-20 h-20 mx-auto bg-blush rounded-full flex items-center justify-center p-3">
             <img src="{{ url_for('static', filename='images/premium.png') }}"
                 class="max-h-full max-w-full object-contain" alt="Premium">
         </div>
-        <h3 class="text-2xl font-serif font-bold text-[#744253]">Premium Subscriptions</h3>
-        <p class="text-sm text-slate-500 leading-relaxed px-2">We are currently working on adding this feature! Soon,
+        <h2 class="text-2xl">Premium is on the way</h2>
+        <p class="text-sm text-ink-soft leading-relaxed px-2">We are currently working on adding this feature! Soon,
             students will gain access to uncapped custom generation limits, deep conceptual tracking charts, and
             specialized mock examinations.</p>
         <div
-            class="inline-block bg-[#D7BEA8] text-[#744253] text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wide">
+            class="inline-block bg-tan text-ink text-xs font-bold px-4 py-1.5 rounded-full ">
             Under Active Development
         </div>
     </div>
 
     {% elif view == 'profile' %}
-    <div class="bg-white border border-[#B49286] rounded-3xl p-6 elevate-sm space-y-5">
-        <div class="flex justify-between items-center border-b border-[#F3D9DC] pb-3">
-            <h3 class="text-xl font-bold text-[#744253]">User Profile Dashboard</h3>
+    <div class="bg-surface border border-line rounded-card p-6 elevate-sm space-y-5">
+        <div class="flex justify-between items-center border-b border-blush pb-3">
+            <h2 class="text-xl">Your details</h2>
             <span
-                class="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-full">{{
+                class="text-xs font-bold text-success bg-success-bg border border-success-line px-2.5 py-1 rounded-full">{{
                 current_user.subscription_status }}</span>
         </div>
 
         {% with messages = get_flashed_messages() %}
         {% if messages %}
         {% for message in messages %}
-        <div class="text-xs bg-emerald-50 border border-emerald-200 text-emerald-600 p-2.5 rounded-xl font-medium mb-2">
+        <div class="text-xs bg-success-bg border border-success-line text-success p-2.5 rounded-control font-medium mb-2">
             {{ message }}</div>
         {% endfor %}
         {% endif %}
@@ -337,52 +319,50 @@
         <div class="space-y-3">
             <div class="grid grid-cols-2 gap-3">
                 <div>
-                    <label class="block text-[10px] uppercase font-bold text-[#B49286] mb-0.5">First Name</label>
-                    <p class="text-sm font-semibold text-[#744253] bg-[#F3D9DC]/30 p-2.5 rounded-xl">{{
+                    <label for="pf_first_name" class="block text-xs font-bold text-ink-soft mb-0.5">First Name</label>
+                    <p class="text-sm font-semibold text-plum bg-blush/30 p-2.5 rounded-control">{{
                         current_user.first_name or '—' }}</p>
                 </div>
                 <div>
-                    <label class="block text-[10px] uppercase font-bold text-[#B49286] mb-0.5">Last Name</label>
-                    <p class="text-sm font-semibold text-[#744253] bg-[#F3D9DC]/30 p-2.5 rounded-xl">{{
+                    <label for="pf_last_name" class="block text-xs font-bold text-ink-soft mb-0.5">Last Name</label>
+                    <p class="text-sm font-semibold text-plum bg-blush/30 p-2.5 rounded-control">{{
                         current_user.last_name or '—' }}</p>
                 </div>
             </div>
             <div>
-                <label class="block text-[10px] uppercase font-bold text-[#B49286] mb-0.5">Phone</label>
-                <p class="text-sm font-semibold text-[#744253] bg-[#F3D9DC]/30 p-2.5 rounded-xl">{{ current_user.phone
+                <label for="pf_phone" class="block text-xs font-bold text-ink-soft mb-0.5">Phone</label>
+                <p class="text-sm font-semibold text-plum bg-blush/30 p-2.5 rounded-control">{{ current_user.phone
                     or '—' }}</p>
             </div>
             <div>
-                <label class="block text-[10px] uppercase font-bold text-[#B49286] mb-0.5">Email Address</label>
-                <p class="text-sm font-semibold text-[#744253] bg-[#F3D9DC]/30 p-2.5 rounded-xl">{{ current_user.email
+                <label class="block text-xs font-bold text-ink-soft mb-0.5">Email Address</label>
+                <p class="text-sm font-semibold text-plum bg-blush/30 p-2.5 rounded-control">{{ current_user.email
                     or '—' }}</p>
             </div>
         </div>
 
         <div class="pt-4 flex flex-col gap-2">
             <a href="/profile/edit"
-                class="btn-primary w-full text-center font-bold py-3 rounded-xl text-xs elevate-sm">
-                Edit Details
+                class="btn-primary w-full text-center font-semibold min-h-12 flex items-center justify-center rounded-control text-base">
+                Edit details
             </a>
-            <a href="/logout"
-                class="btn-danger w-full text-center font-bold py-3 rounded-xl text-xs">
-                Logout of Session
+            <a href="{{ url_for('auth.logout') }}"
+                class="btn-danger w-full text-center font-semibold min-h-12 flex items-center justify-center rounded-control text-base">
+                Log out
             </a>
         </div>
     </div>
 
     {% elif view == 'edit_profile' %}
-    <div class="bg-white border border-[#B49286] rounded-3xl p-6 elevate-sm space-y-5">
-        <div class="flex items-center justify-between border-b border-[#F3D9DC] pb-3">
-            <h3 class="text-xl font-bold text-[#744253]">Edit Details</h3>
-            <a href="/profile"
-                class="btn-secondary text-xs font-bold px-3 py-1.5 rounded-lg">Back</a>
+    <div class="bg-surface border border-line rounded-card p-6 elevate-sm space-y-5">
+        <div class="flex items-center justify-between border-b border-blush pb-3">
+            <h2 class="text-xl">Your details</h2>
         </div>
 
         {% with messages = get_flashed_messages() %}
         {% if messages %}
         {% for message in messages %}
-        <div class="text-xs bg-emerald-50 border border-emerald-200 text-emerald-600 p-2.5 rounded-xl font-medium mb-2">
+        <div class="text-xs bg-success-bg border border-success-line text-success p-2.5 rounded-control font-medium mb-2">
             {{ message }}</div>
         {% endfor %}
         {% endif %}
@@ -392,55 +372,55 @@
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="grid grid-cols-2 gap-3">
                 <div>
-                    <label class="block text-[10px] uppercase font-bold text-[#B49286] mb-0.5">First Name</label>
-                    <input type="text" name="first_name" value="{{ current_user.first_name or '' }}" required
-                        class="w-full text-sm font-semibold text-[#744253] bg-[#F3D9DC]/30 p-2.5 rounded-xl border border-transparent focus:border-[#B49286] focus:outline-none">
+                    <label class="block text-xs font-bold text-ink-soft mb-0.5">First Name</label>
+                    <input type="text" id="pf_first_name" autocomplete="given-name" name="first_name" value="{{ current_user.first_name or '' }}" required
+                        class="w-full text-sm font-semibold text-plum bg-blush/30 p-2.5 rounded-control border border-transparent focus:border-edge">
                 </div>
                 <div>
-                    <label class="block text-[10px] uppercase font-bold text-[#B49286] mb-0.5">Last Name</label>
-                    <input type="text" name="last_name" value="{{ current_user.last_name or '' }}" required
-                        class="w-full text-sm font-semibold text-[#744253] bg-[#F3D9DC]/30 p-2.5 rounded-xl border border-transparent focus:border-[#B49286] focus:outline-none">
+                    <label class="block text-xs font-bold text-ink-soft mb-0.5">Last Name</label>
+                    <input type="text" id="pf_last_name" autocomplete="family-name" name="last_name" value="{{ current_user.last_name or '' }}" required
+                        class="w-full text-sm font-semibold text-plum bg-blush/30 p-2.5 rounded-control border border-transparent focus:border-edge">
                 </div>
             </div>
             <div>
-                <label class="block text-[10px] uppercase font-bold text-[#B49286] mb-0.5">Phone</label>
-                <input type="text" name="phone" value="{{ current_user.phone or '' }}"
-                    class="w-full text-sm font-semibold text-[#744253] bg-[#F3D9DC]/30 p-2.5 rounded-xl border border-transparent focus:border-[#B49286] focus:outline-none">
+                <label class="block text-xs font-bold text-ink-soft mb-0.5">Phone</label>
+                <input type="tel" id="pf_phone" autocomplete="tel" name="phone" value="{{ current_user.phone or '' }}"
+                    class="w-full text-sm font-semibold text-plum bg-blush/30 p-2.5 rounded-control border border-transparent focus:border-edge">
             </div>
             <button type="submit"
-                class="btn-primary w-full font-bold py-3 rounded-xl text-xs elevate-sm">
+                class="btn-primary w-full font-bold py-3 rounded-control text-xs elevate-sm">
                 Save Details
             </button>
         </form>
 
-        <div class="pt-4 border-t border-slate-100 space-y-3">
-            <span class="block text-xs font-bold text-[#744253] uppercase tracking-wider">Email Address</span>
+        <div class="pt-4 border-t border-line space-y-3">
+            <span class="block text-xs font-bold text-plum ">Email Address</span>
 
             {% if current_user.pending_email %}
-            <div class="bg-[#F3D9DC]/40 border border-[#B49286] rounded-xl p-4 space-y-3">
-                <p class="text-xs text-slate-600">Enter the code sent to your new email (<strong>{{
+            <div class="bg-blush/40 border border-line rounded-control p-4 space-y-3">
+                <p class="text-xs text-ink-soft">Enter the code sent to your new email (<strong>{{
                         current_user.pending_email }}</strong>) to finish verifying it.</p>
                 <form action="/profile/email/verify" method="POST" class="flex gap-2">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <input type="text" name="otp" placeholder="6-digit code" maxlength="6" required
-                        class="flex-1 text-sm font-semibold text-[#744253] bg-white p-2.5 rounded-xl border border-[#B49286] focus:outline-none">
+                    <input type="text" name="otp" aria-label="6-digit code" placeholder="000000" inputmode="numeric" autocomplete="one-time-code" maxlength="6" required
+                        class="flex-1 text-sm font-semibold text-plum bg-surface p-2.5 rounded-control border border-edge">
                     <button type="submit"
-                        class="btn-primary font-bold px-4 rounded-xl text-xs">Verify</button>
+                        class="btn-primary font-bold px-4 rounded-control text-xs">Verify</button>
                 </form>
                 <form action="/profile/email/cancel" method="POST">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <button type="submit" class="text-xs text-rose-500 hover:underline">Cancel email change</button>
+                    <button type="submit" class="text-xs text-danger hover:underline">Cancel email change</button>
                 </form>
             </div>
             {% else %}
             <form action="/profile/email/request-change" method="POST" class="flex gap-2">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <input type="email" name="new_email" placeholder="New email address" required
-                    class="flex-1 text-sm font-semibold text-[#744253] bg-[#F3D9DC]/30 p-2.5 rounded-xl border border-transparent focus:border-[#B49286] focus:outline-none">
+                <input type="email" name="new_email" aria-label="New email address" autocomplete="email" spellcheck="false" placeholder="name@example.com" required
+                    class="flex-1 text-sm font-semibold text-plum bg-blush/30 p-2.5 rounded-control border border-transparent focus:border-edge">
                 <button type="submit"
-                    class="btn-primary font-bold px-4 rounded-xl text-xs">Change</button>
+                    class="btn-primary font-bold px-4 rounded-control text-xs">Change</button>
             </form>
-            <p class="text-[10px] text-slate-400">Current: {{ current_user.email }}. We'll send a verification code to
+            <p class="text-xs text-ink-soft">Current: {{ current_user.email }}. We'll send a verification code to
                 the new address.</p>
             {% endif %}
         </div>
@@ -523,7 +503,7 @@
     const fileInputObj = document.getElementById('pdfFileInput');
     if (fileInputObj) {
         fileInputObj.addEventListener('change', e => {
-            document.getElementById('file-name').innerText = e.target.files[0]?.name || "No file parsed yet";
+            document.getElementById('file-name').innerText = e.target.files[0]?.name || "No file chosen";
         });
     }
 
@@ -554,18 +534,18 @@
                 list.innerHTML = '';
                 payload.decks.forEach(deck => {
                     const item = document.createElement('div');
-                    item.className = "bg-[#F3D9DC] border border-[#B49286] text-[#744253] rounded-xl p-2.5 elevate-sm lift-on-hover hover:border-[#744253] active:scale-[0.98] active:border-[#744253] transition duration-100 flex items-center justify-between gap-2";
+                    item.className = "bg-blush border border-line text-plum rounded-control p-2.5 elevate-sm lift-on-hover hover:border-plum active:scale-[0.98] active:border-plum transition duration-100 flex items-center justify-between gap-2";
                     const openBtn = document.createElement('button');
                     openBtn.className = "flex-1 text-left font-bold text-xs truncate cursor-pointer hover:underline";
                     openBtn.title = deck.topic || '';
                     openBtn.appendChild(document.createTextNode(`${deck.topic || ''} `));
                     const countSpan = document.createElement('span');
-                    countSpan.className = "text-[10px] opacity-70 font-mono";
+                    countSpan.className = "text-xs opacity-70 tabular-nums";
                     countSpan.textContent = `(${Number(deck.count) || 0})`;
                     openBtn.appendChild(countSpan);
                     openBtn.addEventListener('click', () => openSavedDeck(deck.id, deck.topic));
                     item.innerHTML = `
-                        <button onclick="deleteFlashcardDeck(${Number(deck.id)}, event)" title="Delete Flashcard Deck" class="btn-danger-ghost p-1.5 rounded-lg cursor-pointer flex-shrink-0">
+                        <button onclick="deleteFlashcardDeck(${Number(deck.id)}, event)" title="Delete Flashcard Deck" class="btn-danger-ghost p-1.5 rounded-control cursor-pointer flex-shrink-0">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
@@ -648,8 +628,8 @@
         Object.keys(fcCurrentSubjects).forEach(subject => {
             const chapterCount = fcCurrentSubjects[subject].length;
             const btn = document.createElement('button');
-            btn.className = "text-left bg-[#F3D9DC] border border-[#B49286] text-[#744253] font-bold py-3 px-4 text-sm rounded-xl hover:bg-[#744253] hover:text-white active:scale-[0.97] active:bg-[#744253] active:text-white transition duration-100 elevate-sm flex justify-between items-center";
-            btn.innerHTML = `<span>${escapeHtml(subject)}</span><span class="text-xs font-mono opacity-70">${chapterCount} chapters</span>`;
+            btn.className = "text-left bg-blush border border-line text-plum font-bold py-3 px-4 text-sm rounded-control hover:bg-plum hover:text-white active:scale-[0.97] active:bg-plum active:text-white transition duration-100 elevate-sm flex justify-between items-center";
+            btn.innerHTML = `<span>${escapeHtml(subject)}</span><span class="text-xs tabular-nums opacity-70">${chapterCount} chapters</span>`;
             btn.onclick = () => openSubject(subject);
             list.appendChild(btn);
         });
@@ -664,8 +644,8 @@
         list.innerHTML = '';
         fcCurrentSubjects[subject].forEach(({ chapter, count }) => {
             const btn = document.createElement('button');
-            btn.className = "text-left bg-[#F3D9DC] border border-[#B49286] text-[#744253] font-bold py-3 px-4 text-sm rounded-xl hover:bg-[#744253] hover:text-white active:scale-[0.97] active:bg-[#744253] active:text-white transition duration-100 elevate-sm flex justify-between items-center";
-            btn.innerHTML = `<span>${escapeHtml(chapter)}</span><span class="text-xs font-mono opacity-70">${count} cards</span>`;
+            btn.className = "text-left bg-blush border border-line text-plum font-bold py-3 px-4 text-sm rounded-control hover:bg-plum hover:text-white active:scale-[0.97] active:bg-plum active:text-white transition duration-100 elevate-sm flex justify-between items-center";
+            btn.innerHTML = `<span>${escapeHtml(chapter)}</span><span class="text-xs tabular-nums opacity-70">${count} cards</span>`;
             btn.onclick = () => openChapter(chapter);
             list.appendChild(btn);
         });
@@ -968,7 +948,7 @@
 
     function deleteRowBtnHTML(noteId) {
         return `
-            <button onclick="deleteSupernote(${noteId}, event)" title="Delete SuperNote" class="btn-danger-ghost p-1.5 rounded-lg cursor-pointer flex-shrink-0">
+            <button onclick="deleteSupernote(${noteId}, event)" title="Delete SuperNote" class="btn-danger-ghost p-1.5 rounded-control cursor-pointer flex-shrink-0">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                 </svg>
@@ -981,11 +961,11 @@
         if (note.status === 'processing') {
             return `
                 <div class="min-w-0">
-                    <p class="text-xs font-bold text-[#744253] truncate">${escapeHtml(note.title)}</p>
-                    <p class="text-[10px] text-amber-600">⏳ Processing... (${dateStr})</p>
+                    <p class="text-xs font-bold text-plum truncate">${escapeHtml(note.title)}</p>
+                    <p class="text-xs text-warning">⏳ Processing... (${dateStr})</p>
                 </div>
                 <div class="flex items-center gap-1 shrink-0">
-                    <span class="text-[10px] font-bold text-amber-600">Please wait</span>
+                    <span class="text-xs font-bold text-warning">Please wait</span>
                     ${deleteRowBtnHTML(note.id)}
                 </div>
             `;
@@ -993,23 +973,23 @@
         if (note.status === 'failed') {
             return `
                 <div class="min-w-0">
-                    <p class="text-xs font-bold text-[#744253] truncate">${escapeHtml(note.title)}</p>
-                    <p class="text-[10px] text-red-500">Failed (${dateStr})</p>
+                    <p class="text-xs font-bold text-plum truncate">${escapeHtml(note.title)}</p>
+                    <p class="text-xs text-danger">Failed (${dateStr})</p>
                 </div>
                 <div class="flex items-center gap-1 shrink-0">
-                    <span class="text-[10px] font-bold text-red-500">Error</span>
+                    <span class="text-xs font-bold text-danger">Error</span>
                     ${deleteRowBtnHTML(note.id)}
                 </div>
             `;
         }
         return `
             <div class="min-w-0">
-                <p class="text-xs font-bold text-[#744253] truncate">${escapeHtml(note.title)}</p>
-                <p class="text-[10px] text-slate-400">${dateStr}</p>
+                <p class="text-xs font-bold text-plum truncate">${escapeHtml(note.title)}</p>
+                <p class="text-xs text-ink-soft">${dateStr}</p>
             </div>
             <div class="flex items-center gap-2 shrink-0">
-                <button class="text-[10px] font-bold text-[#744253] bg-white border border-[#B49286] px-2.5 py-1.5 rounded-lg hover:bg-[#744253] hover:text-white active:scale-[0.95] active:bg-[#744253] active:text-white transition duration-100">View</button>
-                <button class="btn-primary text-[10px] font-bold px-2.5 py-1.5 rounded-lg">⬇</button>
+                <button class="text-xs font-bold text-plum bg-surface border border-line px-2.5 py-1.5 rounded-control hover:bg-plum hover:text-white active:scale-[0.95] active:bg-plum active:text-white transition duration-100">View</button>
+                <button class="btn-primary text-xs font-bold px-2.5 py-1.5 rounded-control">⬇</button>
                 ${deleteRowBtnHTML(note.id)}
             </div>
         `;
@@ -1022,13 +1002,13 @@
             const res = await fetch('/api/study/notes/history');
             const data = await res.json();
             if (!data.success || !data.notes.length) {
-                listEl.innerHTML = '<p class="text-xs text-slate-400">No SuperNotes yet — process a note above to get started.</p>';
+                listEl.innerHTML = '<p class="text-xs text-ink-soft">No SuperNotes yet — process a note above to get started.</p>';
                 return;
             }
             listEl.innerHTML = '';
             data.notes.forEach(note => {
                 const row = document.createElement('div');
-                row.className = "flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl px-3 py-2";
+                row.className = "flex items-center justify-between bg-surface border border-line rounded-control px-3 py-2";
                 row.innerHTML = historyRowHTML(note);
                 if (note.status === 'complete') {
                     const [viewBtn, dlBtn] = row.querySelectorAll('button');
@@ -1038,7 +1018,7 @@
                 listEl.appendChild(row);
             });
         } catch (e) {
-            listEl.innerHTML = '<p class="text-xs text-red-400">Could not load history.</p>';
+            listEl.innerHTML = '<p class="text-xs text-danger">Could not load history.</p>';
         }
     }
 
@@ -1215,7 +1195,7 @@
             if (data.success) {
                 const card = document.getElementById(`quiz-card-${quizId}`);
                 if (card) {
-                    card.style.transition = 'all 0.3s ease';
+                    card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
                     card.style.opacity = '0';
                     card.style.transform = 'scale(0.95)';
                     setTimeout(() => card.remove(), 300);
