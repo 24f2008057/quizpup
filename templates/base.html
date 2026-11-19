@@ -3,302 +3,49 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-        content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#EEECE7">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}">
     <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon/favicon-32x32.png') }}">
     <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon/favicon-16x16.png') }}">
     <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='favicon/apple-touch-icon.png') }}">
     <link rel="manifest" href="{{ url_for('static', filename='favicon/site.webmanifest') }}">
-    <title>QuizPup — Exam preparation for any exam</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.3"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@lottiefiles/lottie-player@2.0.4/dist/lottie-player.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/lottie-web@5.12.2/build/player/lottie.min.js"></script>
-    <style>
-        :root {
-            --color-primary: #C78283;
-            --color-light-bg: #F3D9DC;
-            --color-accent-tan: #D7BEA8;
-            --color-dark-brown: #B49286;
-            --color-deep-plum: #744253;
-
-            /* Neutrals + status colors, brought into the token system instead of
-               ad-hoc Tailwind grays/rose living next to the brand palette. */
-            --color-neutral-bg: #F5F1EE;
-            --color-neutral-bg-strong: #EAE2DC;
-            --color-neutral-text: #8A7A72;
-            --color-danger-bg: #FDF1F0;
-            --color-danger-border: #EBC7C2;
-            --color-danger-text: #B4453A;
-            --color-hover-strong: #3A2530; /* replaces hover:bg-black on brand buttons */
-
-            /* Layered, warm-tinted shadows (plum, not generic black) — this is
-               most of what makes flat cards read as "premium" instead of default. */
-            --shadow-sm: 0 1px 2px rgba(116, 66, 83, 0.05), 0 1px 1px rgba(116, 66, 83, 0.04);
-            --shadow-md: 0 6px 16px rgba(116, 66, 83, 0.09), 0 2px 5px rgba(116, 66, 83, 0.06);
-            --shadow-lg: 0 16px 40px rgba(116, 66, 83, 0.14), 0 6px 12px rgba(116, 66, 83, 0.08);
-        }
-
-        .elevate-sm { box-shadow: var(--shadow-sm); }
-        .elevate-md { box-shadow: var(--shadow-md); }
-        .elevate-lg { box-shadow: var(--shadow-lg); }
-
-        /* Subtle lift on hover for large card surfaces — desktop/trackpad only.
-           Guarded to fine-pointer devices: :hover sticks after a tap on touch,
-           which would leave cards permanently "lifted" and looking broken. */
-        @media (hover: hover) and (pointer: fine) {
-            .lift-on-hover {
-                transition: transform 200ms ease-out, box-shadow 200ms ease-out;
-            }
-            .lift-on-hover:hover {
-                transform: translateY(-3px);
-                box-shadow: var(--shadow-md);
-            }
-        }
-
-        body {
-            background-color: var(--color-light-bg);
-        }
-
-        html,
-        body {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100dvh;
-            background-color: #FFFBFB;
-            overflow: hidden;
-            /* System font stack: inherits the OS's own optical sizing/tracking tuning
-               instead of a generic "sans-serif" fallback. */
-            font: 100%/1.5 -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-        }
-
-        /* Tracking is size-specific, not one fixed value everywhere: tighten large
-           display/heading text (per Apple's type rules). Small text keeps Tailwind's
-           existing tracking-wider utility, which is already correctly positive. */
-        h1, h2, h3 {
-            letter-spacing: -0.01em;
-            line-height: 1.15;
-        }
-
-        .app-container {
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-            height: 100dvh;
-            background-color: #FFFBFB;
-        }
-
-        .main-content {
-            flex: 1;
-            width: 100%;
-            overflow-y: auto;
-            box-sizing: border-box;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        /* Reserve space equal to the now-fixed nav's height, only when it renders */
-        .main-content.has-bottom-nav {
-            padding-bottom: calc(80px + env(safe-area-inset-bottom));
-        }
-
-        .bottom-nav-bar {
-            position: fixed;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            width: 100%;
-            height: 80px;
-            /* Translucent material: content scrolls underneath and shows through,
-               like an iOS tab bar — not a flat opaque strip. */
-            background-color: rgba(215, 190, 168, 0.72);
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border-top: 1px solid rgba(255, 255, 255, 0.5); /* bright top edge = light catching the material */
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            padding-bottom: env(safe-area-inset-bottom);
-            box-sizing: border-box;
-            flex-shrink: 0;
-            z-index: 40;
-        }
-
-        @media (prefers-reduced-transparency: reduce) {
-            .bottom-nav-bar {
-                background-color: #D7BEA8;
-                backdrop-filter: none;
-                -webkit-backdrop-filter: none;
-            }
-        }
-
-        @media (prefers-contrast: more) {
-            .bottom-nav-bar {
-                background-color: #D7BEA8;
-                backdrop-filter: none;
-                -webkit-backdrop-filter: none;
-                border-top: 2px solid #744253;
-            }
-        }
-
-        @font-face {
-            font-family: 'DynaPuff';
-            src: url('/static/fonts/DynaPuff-Bold.ttf') format('truetype');
-            font-weight: 700;
-        }
-
-
-        .splash-screen {
-            position: fixed;
-            inset: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: #e79241;
-            z-index: 9999;
-            animation: splashFadeOut 0.6s ease-out 1.5s forwards;
-        }
-
-        .splash-logo-text {
-            font-family: 'DynaPuff', sans-serif;
-            font-weight: 700;
-            font-size: 4rem;
-            color: #ffffff;
-            margin: 0;
-        }
-
-        @keyframes splashFadeOut {
-            from {
-                opacity: 1;
-                visibility: visible;
-            }
-
-            to {
-                opacity: 0;
-                visibility: hidden;
-            }
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-            .splash-screen {
-                /* Same cross-fade, no lingering hold time */
-                animation: splashFadeOut 0.2s ease-out 0.1s forwards;
-            }
-        }
-
-        /* Exact brand-plum nav icon, via mask instead of approximating a color
-           with filter(invert/sepia/saturate/hue-rotate) on top of the source PNG. */
-        .nav-icon-active {
-            display: inline-block;
-            background-color: var(--color-deep-plum);
-            -webkit-mask-repeat: no-repeat;
-            mask-repeat: no-repeat;
-            -webkit-mask-position: center;
-            mask-position: center;
-            -webkit-mask-size: contain;
-            mask-size: contain;
-        }
-
-        /* Token-driven button treatments, replacing one-off hover:bg-black /
-           hover:bg-[#5a3240] hacks. Both states are defined (not hover-only),
-           so touch devices get real feedback on press, not just pointer hover. */
-        .btn-primary {
-            background-color: var(--color-deep-plum);
-            color: #fff;
-            transition: background-color 150ms ease, transform 100ms ease-out;
-        }
-        .btn-primary:hover { background-color: var(--color-hover-strong); }
-        .btn-primary:active { background-color: var(--color-hover-strong); transform: scale(0.97); }
-
-        .btn-accent {
-            background-color: var(--color-primary);
-            color: #fff;
-            transition: filter 150ms ease, transform 100ms ease-out;
-        }
-        .btn-accent:hover { filter: brightness(0.92); }
-        .btn-accent:active { filter: brightness(0.85); transform: scale(0.97); }
-
-        /* Secondary (Back/Previous/Next) buttons were bg-slate-100 hover:bg-slate-200
-           with no active state at all — invisible feedback on touch. */
-        .btn-secondary {
-            background-color: var(--color-neutral-bg);
-            color: var(--color-deep-plum);
-            transition: background-color 150ms ease, transform 100ms ease-out;
-        }
-        .btn-secondary:hover { background-color: var(--color-neutral-bg-strong); }
-        .btn-secondary:active { background-color: var(--color-neutral-bg-strong); transform: scale(0.96); }
-
-        /* Ghost danger icon buttons (delete deck/note) — same fix. */
-        .btn-danger-ghost {
-            color: color-mix(in srgb, var(--color-deep-plum) 60%, transparent);
-            transition: color 150ms ease, background-color 150ms ease, transform 100ms ease-out;
-        }
-        .btn-danger-ghost:hover { color: var(--color-danger-text); background-color: var(--color-danger-bg); }
-        .btn-danger-ghost:active { color: var(--color-danger-text); background-color: var(--color-danger-bg); transform: scale(0.92); }
-
-        /* Full destructive action buttons (Logout, etc.) */
-        .btn-danger {
-            background-color: var(--color-danger-bg);
-            border: 1px solid var(--color-danger-border);
-            color: var(--color-danger-text);
-            transition: background-color 150ms ease, transform 100ms ease-out;
-        }
-        .btn-danger:hover { background-color: #F9E2DF; }
-        .btn-danger:active { background-color: #F5D5D0; transform: scale(0.97); }
-
-        /* --- Shared motion vocabulary --- */
-
-        /* Rare, high-emotion moments only (results, first-run, celebration).
-           Starts hidden/settled-down; JS adds .reveal-in-active a frame after
-           the parent becomes visible to trigger the transition. */
-        .reveal-in {
-            opacity: 0;
-            transform: scale(0.96);
-            transition: opacity 350ms cubic-bezier(0.23, 1, 0.32, 1),
-                        transform 350ms cubic-bezier(0.23, 1, 0.32, 1);
-        }
-        .reveal-in.reveal-in-delay {
-            transition-delay: 60ms;
-        }
-        .reveal-in.reveal-in-active {
-            opacity: 1;
-            transform: scale(1);
-        }
-
-        /* Occasional section/state swaps: fixes content that teleports in/out
-           via classList.add/remove('hidden') with zero transition. */
-        .fade-swap {
-            transition: opacity 200ms ease-out;
-        }
-        .fade-swap.fade-swap-out {
-            opacity: 0;
-        }
-
-        /* Frequent, in-session content swaps (question navigation etc.) —
-           near-imperceptible per the frequency tier: fast, no scale/slide. */
-        .fade-fast {
-            transition: opacity 120ms ease-out;
-        }
-        .fade-fast.fade-fast-out {
-            opacity: 0.4;
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-            .reveal-in {
-                transform: none;
-                transition: opacity 150ms ease;
-            }
-            .fade-swap, .fade-fast {
-                transition: opacity 100ms ease;
-            }
-        }
-    </style>
+    <title>{% block title %}QuizPup — Exam preparation for any exam{% endblock %}</title>
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="{{ url_for('static', filename='fonts/figtree-latin-wght-normal.woff2') }}">
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="{{ url_for('static', filename='fonts/fraunces-latin-wght-normal.woff2') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+    <script defer src="https://cdn.jsdelivr.net/npm/@lottiefiles/lottie-player@2.0.4/dist/lottie-player.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/lottie-web@5.12.2/build/player/lottie.min.js"></script>
 </head>
 
+{% set show_nav = current_user.is_authenticated and not hide_bottom_nav and view != 'quiz' %}
+{% set back_map = {
+    'auth.login': url_for('auth.index'),
+    'auth.register': url_for('auth.index'),
+    'auth.verify_email': url_for('auth.login'),
+    'auth.forgot_password': url_for('auth.login'),
+    'auth.verify_otp': url_for('auth.forgot_password'),
+    'auth.complete_oauth_profile_page': url_for('auth.login'),
+    'dashboard.flashcards_view': url_for('dashboard.home'),
+    'dashboard.study_view': url_for('dashboard.home'),
+    'dashboard.account': url_for('dashboard.home'),
+    'profile.profile': url_for('dashboard.home'),
+    'profile.edit_profile_page': url_for('profile.profile'),
+    'quiz.run_quiz': url_for('dashboard.home'),
+} %}
+{% set back_url = back_map.get(request.endpoint) %}
+{% set nav_items = [
+    ('home', url_for('dashboard.home'), 'home.png', 'Home'),
+    ('flashcards', url_for('dashboard.flashcards_view'), 'question.png', 'Flashcards'),
+    ('study', url_for('dashboard.study_view'), 'study.png', 'Notes'),
+    ('account', url_for('dashboard.account'), 'premium.png', 'Premium'),
+    ('profile', url_for('profile.profile'), 'user.png', 'Profile'),
+] %}
+
 <body>
-    <div id="splash-screen" class="splash-screen">
-        <h1 class="splash-logo-text">QuizPup</h1>
+    <div id="splash-screen" class="splash-screen" aria-hidden="true">
+        <p class="splash-logo-text">QuizPup</p>
     </div>
 
     <script nonce="{{ csp_nonce() }}">
@@ -336,41 +83,87 @@
             };
         })();
     </script>
-    <div class="app-container">
 
-        <main class="main-content{% if current_user.is_authenticated and not hide_bottom_nav and view != 'quiz' %} has-bottom-nav{% endif %}">
-            {% block content %}{% endblock %}
+    <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[10000] focus:rounded-control focus:bg-surface focus:px-4 focus:py-2 focus:text-plum">Skip to content</a>
+
+    <div class="app-shell">
+
+        {% if show_nav %}
+        <aside class="rail">
+            <a class="wordmark mb-8 px-3" href="{{ url_for('dashboard.home') }}">Quiz<span>Pup</span></a>
+            <nav aria-label="Main" class="flex flex-col gap-1">
+                {% for key, href, icon, label in nav_items %}
+                <a href="{{ href }}" class="nav-item"{% if view == key %} aria-current="page"{% endif %}>
+                    <span class="nav-icon" aria-hidden="true"
+                        style="mask-image:url('{{ url_for('static', filename='images/' ~ icon) }}'); -webkit-mask-image:url('{{ url_for('static', filename='images/' ~ icon) }}');"></span>
+                    <span>{{ label }}</span>
+                </a>
+                {% endfor %}
+            </nav>
+            <a href="{{ url_for('auth.logout') }}" class="nav-item mt-auto">
+                <span>Log out</span>
+            </a>
+        </aside>
+        {% endif %}
+
+        <main id="main" class="main-content{% if show_nav %} has-bottom-nav{% endif %}">
+            {% if back_url %}
+            <div class="topbar">
+                <div class="page flex">
+                    <a class="back-link" href="{{ back_url }}" data-back>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"
+                            aria-hidden="true">
+                            <path d="M15 18l-6-6 6-6" />
+                        </svg>
+                        Back
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+            <div class="page">
+                {% block content %}{% endblock %}
+            </div>
         </main>
 
-        {% if current_user.is_authenticated and not hide_bottom_nav and view != 'quiz' %}
-
-        <nav class="bottom-nav-bar">
-
-            {% set nav_items = [
-                ('home', '/home', 'home.png', 'Home'),
-                ('flashcards', '/flashcards', 'question.png', 'AI Flashcards'),
-                ('study', '/study', 'study.png', 'AI Notes and Supernotes'),
-                ('account', '/account', 'premium.png', 'Premium Feature'),
-                ('profile', '/profile', 'user.png', 'Profile Dashboard'),
-            ] %}
+        {% if show_nav %}
+        <nav class="bottom-nav-bar" aria-label="Main">
             {% for key, href, icon, label in nav_items %}
-            <a href="{{ href }}"
-                class="flex flex-col items-center py-2 px-3 -m-2 rounded-xl transition-transform duration-100 active:scale-90">
-                {% if view == key %}
-                <span class="h-8 w-8 nav-icon-active"
-                    style="mask-image:url('{{ url_for('static', filename='images/' ~ icon) }}'); -webkit-mask-image:url('{{ url_for('static', filename='images/' ~ icon) }}');"
-                    role="img" aria-label="{{ label }}"></span>
-                {% else %}
-                <img src="{{ url_for('static', filename='images/' ~ icon) }}" class="h-8 w-8 object-contain"
-                    alt="{{ label }}">
-                {% endif %}
+            <a href="{{ href }}" class="nav-item"{% if view == key %} aria-current="page"{% endif %}>
+                <span class="nav-icon" aria-hidden="true"
+                    style="mask-image:url('{{ url_for('static', filename='images/' ~ icon) }}'); -webkit-mask-image:url('{{ url_for('static', filename='images/' ~ icon) }}');"></span>
+                <span>{{ label }}</span>
             </a>
             {% endfor %}
-
         </nav>
         {% endif %}
 
     </div>
+
+    <script nonce="{{ csp_nonce() }}">
+        (function () {
+            var links = document.querySelectorAll('[data-back]');
+            if (!links.length) return;
+            var blocked = /^\/(login|register|logout|verify-email|verify-otp|forgot-password|auth\/)/;
+            function canGoBack() {
+                if (!document.referrer || window.history.length < 2) return false;
+                try {
+                    var ref = new URL(document.referrer);
+                    return ref.origin === window.location.origin && ref.pathname !== window.location.pathname && !blocked.test(ref.pathname);
+                } catch (e) {
+                    return false;
+                }
+            }
+            links.forEach(function (link) {
+                link.addEventListener('click', function (event) {
+                    if (canGoBack()) {
+                        event.preventDefault();
+                        window.history.back();
+                    }
+                });
+            });
+        })();
+    </script>
 </body>
 
 </html>
