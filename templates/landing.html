@@ -3,7 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>QuizPup — Ace your exams, the friendly way</title>
+<title>QuizPup — Exam preparation for any exam</title>
+<meta name="description" content="QuizPup is exam preparation for any exam. Generate quizzes and flashcards on any topic or from your own PDF, and turn your notes into summaries.">
+<meta property="og:title" content="QuizPup — Exam preparation for any exam">
+<meta property="og:description" content="AI quizzes, flashcards and note summaries for any exam or topic, in one calm place to study.">
 <style>
 @font-face { font-family: 'DynaPuff'; src: url('{{ url_for("static", filename="fonts/DynaPuff-Bold.ttf") }}') format('truetype'); font-weight: 700; font-display: swap; }
 :root { --page: #E6E6E6; --rose: #C78283; --rose-deep: #B06B6D; --plum: #744253; --ink: #3A2530; --muted: #6E5F58; --serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif; --pad: clamp(24px, 5vw, 88px); }
@@ -69,9 +72,9 @@ h1 { font-family: var(--serif); font-weight: 500; font-size: 3.5rem; line-height
 </nav>
 
 <main class="copy">
-  <div class="eyebrow">Your AI study companion</div>
-  <h1>Ace your exams, the friendly way.</h1>
-  <p>AI-generated quizzes, flashcards and note summaries, together in one calm place to study.</p>
+  <div class="eyebrow">Exam preparation for any exam</div>
+  <h1>Ace any exam, the friendly way.</h1>
+  <p>AI-generated quizzes, flashcards and note summaries for any exam or topic, together in one calm place to study.</p>
   <div class="cta">
     <a class="btn primary" href="{{ url_for('auth.register') }}">Get started</a>
     <a class="btn ghost" href="{{ url_for('auth.login') }}">I already have an account</a>

@@ -1,6 +1,6 @@
 # QuizPup
 
-QuizPup is a full-stack study platform for JEE, NEET, and CAT aspirants. It combines AI-generated quizzes, preloaded flashcard decks, and an OCR-powered notes digitizer into a single Flask web app that also ships as a native Android app via Capacitor.
+QuizPup is exam preparation for any exam. Students can generate quizzes and flashcards on any topic or from their own PDF, and can start from ready-made decks for JEE, NEET, and CAT. It combines AI-generated quizzes, preloaded flashcard decks, and an OCR-powered notes digitizer into a single Flask web app that also ships as a native Android app via Capacitor.
 
 **Live app:** [quizpup.onrender.com](https://quizpup.onrender.com/)
 
