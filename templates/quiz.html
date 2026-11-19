@@ -3,72 +3,63 @@
 <style>
     .quiz-toolbar {
         position: sticky;
-        top: 0;
+        top: 3.25rem;
         z-index: 30;
-        background-color: rgba(215, 190, 168, 0.78);
-        backdrop-filter: blur(20px) saturate(180%);
-        -webkit-backdrop-filter: blur(20px) saturate(180%);
-        border: 1px solid #B49286;
-        border-top-color: rgba(255, 255, 255, 0.5); /* bright top edge catching the material's light */
-    }
-    @media (prefers-reduced-transparency: reduce) {
-        .quiz-toolbar { background-color: #D7BEA8; backdrop-filter: none; -webkit-backdrop-filter: none; }
-    }
-    @media (prefers-contrast: more) {
-        .quiz-toolbar { background-color: #D7BEA8; backdrop-filter: none; -webkit-backdrop-filter: none; border-top: 2px solid #744253; }
+        background-color: var(--color-surface);
+        border: 1px solid var(--color-line);
     }
 </style>
 <div id="quiz-workspace" class="p-5 space-y-6">
-    <div class="quiz-toolbar p-4 rounded-2xl elevate-sm space-y-3">
+    <div class="quiz-toolbar p-4 rounded-panel elevate-sm space-y-3">
         <div class="flex justify-between items-center">
             <div>
-                <h3 class="text-lg font-serif font-bold text-[#744253]">{{ session.topic }}</h3>
-                <span id="hint-status-label" class="text-xs text-[#744253]/80 font-semibold uppercase"></span>
+                <h3 class="text-lg font-serif font-bold text-plum">{{ session.topic }}</h3>
+                <span id="hint-status-label" class="text-xs text-plum/80 font-semibold "></span>
             </div>
             <div class="text-right">
-                <div id="clock-display" class="text-xl font-mono font-bold text-[#744253]">00:00</div>
+                <div id="clock-display" class="text-xl tabular-nums font-bold text-plum">00:00</div>
             </div>
         </div>
-        <div class="flex justify-between items-center pt-2.5 border-t border-[#B49286]/30">
-            <button id="quitExamBtn" onclick="quitExam()" class="px-3.5 py-1.5 bg-[#F3D9DC] text-[#744253] border border-[#B49286] rounded-xl text-xs font-semibold hover:bg-[#EBC4C8] active:bg-[#EBC4C8] active:scale-[0.97] transition duration-100 cursor-pointer">Quit Exam</button>
-            <button id="headerSubmitBtn" onclick="confirmAndSubmitQuiz()" class="btn-primary px-4 py-1.5 rounded-xl text-xs font-semibold cursor-pointer">Submit</button>
+        <div class="flex justify-between items-center pt-2.5 border-t border-line/30">
+            <button id="quitExamBtn" onclick="quitExam()" class="px-3.5 py-1.5 bg-blush text-plum border border-line rounded-control text-xs font-semibold hover:bg-blush-deep active:bg-blush-deep active:scale-[0.97] transition duration-100 cursor-pointer">Quit Exam</button>
+            <button id="headerSubmitBtn" onclick="confirmAndSubmitQuiz()" class="btn-primary px-4 py-1.5 rounded-control text-xs font-semibold cursor-pointer">Submit</button>
         </div>
     </div>
 
-    <div id="questionCard" class="bg-white border border-[#B49286] p-6 rounded-3xl elevate-sm">
-        <div id="question-header" class="text-sm font-bold text-[#C78283] mb-2 uppercase tracking-wide"></div>
-        <p id="question-body-text" class="text-base text-[#744253] font-semibold mb-6"></p>
+    <div id="questionCard" class="bg-surface border border-line p-6 rounded-card elevate-sm">
+        <div id="question-header" class="text-sm font-bold text-rose-strong mb-2 "></div>
+        <p id="question-body-text" class="text-base text-plum font-semibold mb-6"></p>
         
         <div id="options-box" class="space-y-2.5"></div>
         
-        <div id="feedback-explanation-panel" class="mt-6 p-4 bg-[#F3D9DC] border border-[#B49286] rounded-2xl hidden">
-            <h5 class="text-xs font-bold text-[#744253] uppercase mb-1">Explanation After Attempt</h5>
-            <p id="explanation-text-string" class="text-sm text-[#744253] leading-relaxed"></p>
+        <div id="feedback-explanation-panel" class="mt-6 p-4 bg-blush border border-line rounded-panel hidden">
+            <h5 class="text-xs font-bold text-plum mb-1">Explanation After Attempt</h5>
+            <p id="explanation-text-string" class="text-sm text-plum leading-relaxed"></p>
         </div>
     </div>
 
     <div class="flex justify-between items-center">
-        <button id="prevBtn" onclick="moveSlide(-1)" class="px-4 py-2 bg-[#F3D9DC] text-[#744253] border border-[#B49286] rounded-xl text-sm font-semibold hover:bg-[#EBC4C8] disabled:opacity-50 cursor-pointer">Previous</button>
+        <button id="prevBtn" onclick="moveSlide(-1)" class="px-4 py-2 bg-blush text-plum border border-line rounded-control text-sm font-semibold hover:bg-blush-deep disabled:opacity-50 cursor-pointer">Previous</button>
         <div class="flex gap-2">
-            <button id="clearBtn" onclick="clearCurrentChoice()" class="px-4 py-2 border border-[#B49286] text-[#744253] rounded-xl text-sm font-medium hover:bg-[#F3D9DC]/40 cursor-pointer">Clear Answer</button>
-            <button id="hintTriggerBtn" onclick="requestHintPayload()" class="btn-accent px-4 py-2 rounded-xl text-sm font-semibold elevate-sm hidden cursor-pointer">Hint</button>
+            <button id="clearBtn" onclick="clearCurrentChoice()" class="px-4 py-2 border border-line text-plum rounded-control text-sm font-medium hover:bg-blush/40 cursor-pointer">Clear Answer</button>
+            <button id="hintTriggerBtn" onclick="requestHintPayload()" class="btn-accent px-4 py-2 rounded-control text-sm font-semibold elevate-sm hidden cursor-pointer">Hint</button>
         </div>
-        <button id="nextBtn" onclick="moveSlide(1)" class="btn-primary px-4 py-2 rounded-xl text-sm font-semibold elevate-sm cursor-pointer">Next</button>
+        <button id="nextBtn" onclick="moveSlide(1)" class="btn-primary px-4 py-2 rounded-control text-sm font-semibold elevate-sm cursor-pointer">Next</button>
     </div>
 </div>
 
-<div id="analytics-report-card" class="hidden space-y-6 bg-white border border-[#B49286] p-6 rounded-3xl elevate-lg m-5">
-    <h3 class="text-2xl font-serif font-bold text-[#744253] reveal-in">Quiz Summary Report</h3>
-    <p class="text-lg font-semibold text-[#744253] reveal-in">Total Score: <span id="score-data-val" class="font-black text-[#C78283] text-2xl font-mono tracking-tight"></span></p>
+<div id="analytics-report-card" class="hidden space-y-6 bg-surface border border-line p-6 rounded-card elevate-lg m-5">
+    <h3 class="text-2xl font-serif font-bold text-plum reveal-in">Quiz Summary Report</h3>
+    <p class="text-lg font-semibold text-plum reveal-in">Total Score: <span id="score-data-val" class="font-black text-rose-strong text-2xl tabular-nums tracking-tight"></span></p>
     
-    <div class="p-4 bg-[#F3D9DC] border border-[#B49286] rounded-2xl reveal-in reveal-in-delay">
-        <h4 class="text-xs font-bold text-[#744253] uppercase mb-1">Improvement Suggestions</h4>
-        <p id="recommendation-box-string" class="text-sm text-[#744253] leading-relaxed"></p>
+    <div class="p-4 bg-blush border border-line rounded-panel reveal-in reveal-in-delay">
+        <h4 class="text-xs font-bold text-plum mb-1">Improvement Suggestions</h4>
+        <p id="recommendation-box-string" class="text-sm text-plum leading-relaxed"></p>
     </div>
     
     <div class="flex flex-col sm:flex-row gap-3 pt-2 reveal-in reveal-in-delay">
-        <button onclick="revealExplanationsWorkflow()" class="btn-accent flex-1 font-semibold py-3 px-4 rounded-2xl text-sm elevate-sm cursor-pointer text-center">Review Answers & Explanations</button>
-        <a href="/home" class="btn-primary flex-1 font-semibold py-3 px-4 rounded-2xl text-sm elevate-sm cursor-pointer text-center flex items-center justify-center gap-2">Go to Home</a>
+        <button onclick="revealExplanationsWorkflow()" class="btn-accent flex-1 font-semibold py-3 px-4 rounded-panel text-sm elevate-sm cursor-pointer text-center">Review Answers & Explanations</button>
+        <a href="/home" class="btn-primary flex-1 font-semibold py-3 px-4 rounded-panel text-sm elevate-sm cursor-pointer text-center flex items-center justify-center gap-2">Go to Home</a>
     </div>
 </div>
 
@@ -136,9 +127,10 @@ async function saveProgress() {
 
 window.addEventListener('beforeunload', () => {
     if (!reviewMode && questionDeck.length) {
-        const payload = JSON.stringify({ answers: savedAnswers, seconds_remaining: secondsLeft });
-        const blob = new Blob([payload], { type: 'application/json' });
-        navigator.sendBeacon('/api/quiz/{{ session.id }}/save-progress', blob);
+        const form = new FormData();
+        form.append('csrf_token', document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '');
+        form.append('payload', JSON.stringify({ answers: savedAnswers, seconds_remaining: secondsLeft }));
+        navigator.sendBeacon('/api/quiz/{{ session.id }}/save-progress', form);
     }
 });
 
@@ -173,17 +165,17 @@ function showQuestion() {
             let isCorrectChoice = indexId == correctOptionIndex;
             
             if (isCorrectChoice) {
-                classString += "border-emerald-500 bg-emerald-50/60 text-emerald-900";
-                badgeHtml = '<span class="bg-emerald-600 text-white text-[10px] uppercase font-bold px-2 py-0.5 rounded elevate-sm">Correct</span>';
+                classString += "border-success bg-success-bg text-success";
+                badgeHtml = '<span class="bg-success text-white text-xs font-bold px-2 py-0.5 rounded elevate-sm">Correct</span>';
             } else if (isUserChoice && !isCorrectChoice) {
-                classString += "border-rose-500 bg-rose-50/60 text-rose-900";
-                badgeHtml = '<span class="bg-rose-600 text-white text-[10px] uppercase font-bold px-2 py-0.5 rounded elevate-sm">Wrong</span>';
+                classString += "border-danger bg-danger-bg text-danger";
+                badgeHtml = '<span class="bg-danger text-white text-xs font-bold px-2 py-0.5 rounded elevate-sm">Wrong</span>';
             } else {
-                classString += "border-slate-200 opacity-60";
+                classString += "border-line opacity-60";
             }
         } else {
             // Live active testing states
-            classString += isUserChoice ? 'border-[#C78283] bg-[#F3D9DC] text-[#744253] font-bold elevate-sm' : 'border-[#B49286]/30 text-[#744253] hover:bg-[#F3D9DC]/30';
+            classString += isUserChoice ? 'border-rose-strong bg-blush text-plum font-bold elevate-sm' : 'border-line/30 text-plum hover:bg-blush/30';
         }
         
         row.className = classString;
@@ -195,7 +187,7 @@ function showQuestion() {
 
         row.innerHTML = `
             <div class="flex items-center gap-3">
-                <input type="radio" name="opts-${item.id}" value="${indexId}" ${selectedState} ${disabledState} onchange="logSelection(${item.id}, ${indexId})" class="h-4 w-4 accent-[#744253]">
+                <input type="radio" name="opts-${item.id}" value="${indexId}" ${selectedState} ${disabledState} onchange="logSelection(${item.id}, ${indexId})" class="h-4 w-4 accent-plum">
                 <span>${indexId}. ${escapeHtml(item[indexId])}</span>
             </div>
             ${badgeHtml}
