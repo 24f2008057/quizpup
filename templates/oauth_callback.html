@@ -1,13 +1,13 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="p-6 flex flex-col justify-center items-center min-h-[80vh] text-center">
-    <div class="w-16 h-16 border-4 border-[#C78283] border-t-transparent rounded-full animate-spin mb-6"></div>
-    <p id="oauthStatusText" class="text-sm font-medium text-[#744253]">Signing you in...</p>
-    <a id="oauthRetryLink" href="/login" class="hidden text-xs text-[#B49286] underline mt-4">Back to login</a>
+<div class="p-6 flex flex-col justify-center items-center min-h-[70vh] text-center" role="status">
+    <div class="w-16 h-16 border-4 border-rose-strong border-t-transparent rounded-full animate-spin mb-6"></div>
+    <p id="oauthStatusText" class="text-base font-medium text-plum">Signing you in...</p>
+    <a id="oauthRetryLink" href="/login" class="hidden text-sm text-plum underline underline-offset-4 mt-4 py-2">Back to log in</a>
 </div>
 
 <script type="application/json" id="supabase-config">{"url": {{ supabase_url|tojson }}, "anonKey": {{ supabase_anon_key|tojson }}}</script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
 <script nonce="{{ csp_nonce() }}">
     (function () {
         var statusEl = document.getElementById('oauthStatusText');
