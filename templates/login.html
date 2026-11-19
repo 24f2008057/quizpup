@@ -1,127 +1,118 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="p-6 flex flex-col justify-center min-h-[80vh]"
-    style="background: radial-gradient(ellipse 80% 60% at 50% 20%, rgba(199, 130, 131, 0.16), transparent 65%),
-                        radial-gradient(ellipse 70% 50% at 85% 90%, rgba(215, 190, 168, 0.22), transparent 60%);">
-    <div class="bg-white border border-[#B49286] p-8 rounded-[2.5rem] elevate-lg space-y-6 text-center">
+{% set is_register = action == "Register" %}
+<div class="px-5 py-8 sm:py-14">
+    <div class="page-narrow">
+        <div class="bg-surface border border-line p-6 sm:p-8 rounded-card elevate-sm space-y-6">
 
-        <div class="w-28 h-28 mx-auto flex items-center justify-center bg-[#F3D9DC] rounded-full p-2">
-            <img src="{{ url_for('static', filename='images/mascot-happy-sitting.png') }}"
-                class="max-h-full max-w-full object-contain" alt="Mascot">
-        </div>
+            <div class="flex items-center gap-4">
+                <img src="{{ url_for('static', filename='images/mascot-happy-sitting.png') }}"
+                    class="h-14 w-auto object-contain shrink-0" alt="">
+                <div>
+                    <h1 class="text-2xl">{% if is_register %}Create your account{% else %}Welcome back{% endif %}</h1>
+                    <p class="text-sm text-ink-soft mt-1">Quizzes, flashcards and note summaries for any exam.</p>
+                </div>
+            </div>
 
-        <div>
-            <h2 class="text-3xl font-serif font-bold tracking-tight text-[#744253]">{{ action }} Platform</h2>
-            <p class="text-xs text-[#B49286] font-medium mt-1">Welcome to your AI-powered study space</p>
-        </div>
+            {% with messages = get_flashed_messages() %}
+            {% if messages %}
+            {% for message in messages %}
+            <div role="alert" class="text-sm p-3 rounded-control font-medium bg-danger-bg border border-danger-line text-danger">
+                {{ message }}
+            </div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
 
-        {% with messages = get_flashed_messages() %}
-        {% if messages %}
-        {% for message in messages %}
-        <div class="text-xs p-2.5 rounded-xl font-medium"
-            style="background-color: var(--color-danger-bg); border: 1px solid var(--color-danger-border); color: var(--color-danger-text);">
-            {{ message }}
-        </div>
-        {% endfor %}
-        {% endif %}
-        {% endwith %}
+            <div class="space-y-3">
+                <button type="button" id="googleOauthBtn"
+                    class="w-full flex items-center justify-center gap-2 border border-edge bg-surface hover:bg-sunken active:bg-sunken active:scale-[0.98] text-ink font-semibold min-h-12 rounded-control transition duration-100 text-sm cursor-pointer">
+                    <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.9c1.7-1.57 2.7-3.88 2.7-6.62z"/>
+                        <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.9-2.26c-.8.54-1.83.86-3.06.86-2.35 0-4.34-1.59-5.05-3.72H.95v2.33A9 9 0 0 0 9 18z"/>
+                        <path fill="#FBBC05" d="M3.95 10.7A5.4 5.4 0 0 1 3.67 9c0-.59.1-1.17.28-1.7V4.97H.95A9 9 0 0 0 0 9c0 1.45.35 2.83.95 4.03z"/>
+                        <path fill="#EA4335" d="M9 3.58c1.32 0 2.51.45 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 0 0 .95 4.97l3 2.33C4.66 5.17 6.65 3.58 9 3.58z"/>
+                    </svg>
+                    Continue with Google
+                </button>
+                <button type="button" id="githubOauthBtn"
+                    class="w-full flex items-center justify-center gap-2 border border-edge bg-surface hover:bg-sunken active:bg-sunken active:scale-[0.98] text-ink font-semibold min-h-12 rounded-control transition duration-100 text-sm cursor-pointer">
+                    <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+                    </svg>
+                    Continue with GitHub
+                </button>
+            </div>
 
-        <div class="space-y-3">
-            <button type="button" id="googleOauthBtn"
-                class="w-full flex items-center justify-center gap-2 border border-[#B49286] bg-white hover:bg-[#FFFBFB] active:bg-[#F3D9DC] active:scale-[0.98] text-[#744253] font-bold py-3 rounded-xl transition duration-100 text-sm">
-                <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
-                    <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.9c1.7-1.57 2.7-3.88 2.7-6.62z"/>
-                    <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.9-2.26c-.8.54-1.83.86-3.06.86-2.35 0-4.34-1.59-5.05-3.72H.95v2.33A9 9 0 0 0 9 18z"/>
-                    <path fill="#FBBC05" d="M3.95 10.7A5.4 5.4 0 0 1 3.67 9c0-.59.1-1.17.28-1.7V4.97H.95A9 9 0 0 0 0 9c0 1.45.35 2.83.95 4.03z"/>
-                    <path fill="#EA4335" d="M9 3.58c1.32 0 2.51.45 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 0 0 .95 4.97l3 2.33C4.66 5.17 6.65 3.58 9 3.58z"/>
-                </svg>
-                Continue with Google
-            </button>
-            <button type="button" id="githubOauthBtn"
-                class="w-full flex items-center justify-center gap-2 border border-[#B49286] bg-white hover:bg-[#FFFBFB] active:bg-[#F3D9DC] active:scale-[0.98] text-[#744253] font-bold py-3 rounded-xl transition duration-100 text-sm">
-                <svg width="18" height="18" viewBox="0 0 16 16" fill="#744253" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
-                </svg>
-                Continue with GitHub
-            </button>
-        </div>
+            <div class="flex items-center gap-3 text-sm text-ink-soft" role="separator">
+                <div class="flex-1 h-px bg-line"></div>
+                or use your email
+                <div class="flex-1 h-px bg-line"></div>
+            </div>
 
-        <div class="flex items-center gap-3 text-[10px] text-[#B49286] font-bold uppercase">
-            <div class="flex-1 h-px bg-[#B49286]/40"></div>
-            or
-            <div class="flex-1 h-px bg-[#B49286]/40"></div>
-        </div>
-
-        <form method="POST" class="space-y-4 text-left">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <div>
-                {% if action == "Register" %}
-                <label class="block text-xs font-bold text-[#744253] uppercase tracking-wider mb-1">Username</label>
-                <input type="text" name="username" required
-                    class="w-full border border-[#B49286] bg-[#FFFBFB] rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#C78283]">
+            <form method="POST" class="space-y-4">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                {% if is_register %}
+                <div>
+                    <label class="field-label" for="username">Username</label>
+                    <input class="field" id="username" type="text" name="username" required autocomplete="username">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="field-label" for="first_name">First name</label>
+                        <input class="field" id="first_name" type="text" name="first_name" required autocomplete="given-name">
+                    </div>
+                    <div>
+                        <label class="field-label" for="last_name">Last name</label>
+                        <input class="field" id="last_name" type="text" name="last_name" required autocomplete="family-name">
+                    </div>
+                </div>
+                <div>
+                    <label class="field-label" for="phone">Phone number</label>
+                    <input class="field" id="phone" type="tel" name="phone" required autocomplete="tel">
+                </div>
+                <div>
+                    <label class="field-label" for="email">Email</label>
+                    <input class="field" id="email" type="email" name="email" autocomplete="email">
+                </div>
                 {% else %}
-                <label class="block text-xs font-bold text-[#744253] uppercase tracking-wider mb-1">Email</label>
-                <input type="email" name="email" required
-                    class="w-full border border-[#B49286] bg-[#FFFBFB] rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#C78283]">
+                <div>
+                    <label class="field-label" for="email">Email</label>
+                    <input class="field" id="email" type="email" name="email" required autocomplete="email">
+                </div>
                 {% endif %}
-            </div>
 
-            {% if action == "Register" %}
-            <div class="grid grid-cols-2 gap-3">
                 <div>
-                    <label class="block text-xs font-bold text-[#744253] uppercase tracking-wider mb-1">First
-                        Name</label>
-                    <input type="text" name="first_name" required
-                        class="w-full border border-[#B49286] bg-[#FFFBFB] rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#C78283]">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-[#744253] uppercase tracking-wider mb-1">Last
-                        Name</label>
-                    <input type="text" name="last_name" required
-                        class="w-full border border-[#B49286] bg-[#FFFBFB] rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#C78283]">
-                </div>
-            </div>
-            <div>
-                <label class="block text-xs font-bold text-[#744253] uppercase tracking-wider mb-1">Phone Number</label>
-                <input type="tel" name="phone" required
-                    class="w-full border border-[#B49286] bg-[#FFFBFB] rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#C78283]">
-            </div>
-            <div>
-                <label class="block text-xs font-bold text-[#744253] uppercase tracking-wider mb-1">Email</label>
-                <input type="email" name="email"
-                    class="w-full border border-[#B49286] bg-[#FFFBFB] rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#C78283]">
-            </div>
-            {% endif %}
-
-            <div>
-                <label class="block text-xs font-bold text-[#744253] uppercase tracking-wider mb-1">Password</label>
-                <input type="password" name="password" required
-                    {% if action == "Register" %}
-                    pattern="(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}"
-                    title="At least 8 characters, including a letter, a number, and a special character."
+                    <label class="field-label" for="password">Password</label>
+                    <input class="field" id="password" type="password" name="password" required
+                        autocomplete="{% if is_register %}new-password{% else %}current-password{% endif %}"
+                        {% if is_register %}
+                        pattern="(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}"
+                        title="At least 8 characters, including a letter, a number, and a special character."
+                        aria-describedby="password-hint"
+                        {% endif %}>
+                    {% if is_register %}
+                    <p id="password-hint" class="text-xs mt-1.5 text-ink-soft">Use at least 8 characters, with a letter, a number and a symbol.</p>
                     {% endif %}
-                    class="w-full border border-[#B49286] bg-[#FFFBFB] rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#C78283]">
-                {% if action == "Register" %}
-                <p class="text-[10px] mt-1" style="color: var(--color-neutral-text);">At least 8 characters, with a letter, a number, and a special character.</p>
+                </div>
+
+                {% if not is_register %}
+                <div class="flex justify-end">
+                    <a href="{{ url_for('auth.forgot_password') }}" class="text-sm font-medium text-plum underline underline-offset-4 py-2">Forgot password?</a>
+                </div>
                 {% endif %}
-            </div>
+                <button type="submit" class="btn-primary w-full font-semibold min-h-12 rounded-control text-base cursor-pointer">
+                    {% if is_register %}Create account{% else %}Log in{% endif %}
+                </button>
+            </form>
 
-            <div class="flex justify-end items-center mt-2 text-xs">
-                <a href="/forgot-password" class="hover:underline active:opacity-70 font-medium" style="color: var(--color-neutral-text);">Forgot Password?</a>
-            </div>
-            <button type="submit"
-                class="btn-primary w-full font-bold py-3.5 rounded-xl elevate-md text-sm mt-2">
-                {{ action }} Session
-            </button>
-        </form>
-
-        <div class="text-xs font-medium text-[#B49286]">
-            {% if action == "Login" %}
-            Don't have an account? <a href="/register" class="text-[#744253] font-bold hover:underline active:opacity-70">Register
-                Here</a>
-            {% else %}
-            Already have an account? <a href="/login" class="text-[#744253] font-bold hover:underline active:opacity-70">Login Here</a>
-            {% endif %}
+            <p class="text-sm text-ink-soft text-center">
+                {% if not is_register %}
+                New to QuizPup? <a href="{{ url_for('auth.register') }}" class="text-plum font-semibold underline underline-offset-4">Create an account</a>
+                {% else %}
+                Already have an account? <a href="{{ url_for('auth.login') }}" class="text-plum font-semibold underline underline-offset-4">Log in</a>
+                {% endif %}
+            </p>
         </div>
     </div>
 </div>
