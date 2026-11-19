@@ -7,72 +7,67 @@
 <meta name="description" content="QuizPup is exam preparation for any exam. Generate quizzes and flashcards on any topic or from your own PDF, and turn your notes into summaries.">
 <meta property="og:title" content="QuizPup — Exam preparation for any exam">
 <meta property="og:description" content="AI quizzes, flashcards and note summaries for any exam or topic, in one calm place to study.">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
 <style>
-@font-face { font-family: 'DynaPuff'; src: url('{{ url_for("static", filename="fonts/DynaPuff-Bold.ttf") }}') format('truetype'); font-weight: 700; font-display: swap; }
-:root { --page: #E6E6E6; --rose: #C78283; --rose-deep: #B06B6D; --plum: #744253; --ink: #3A2530; --muted: #6E5F58; --serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif; --pad: clamp(24px, 5vw, 88px); }
+html { height: auto; overflow-x: hidden; overflow-y: auto; font-size: clamp(11px, min(1.05vw, 1.85vh), 16px); }
 * { box-sizing: border-box; margin: 0; }
-html { overflow-x: hidden; font-size: clamp(11px, min(1.05vw, 1.85vh), 16px); }
-body { min-height: 100svh; display: grid; grid-template-columns: minmax(340px, 36%) 1fr; grid-template-rows: auto 1fr auto; grid-template-areas: "brand actions" "copy stage" "foot stage"; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; color: var(--ink); background: var(--page); }
+body { min-height: 100svh; height: auto; display: grid; grid-template-columns: minmax(340px, 38%) 1fr; grid-template-rows: auto 1fr auto; grid-template-areas: "brand actions" "copy stage" "foot stage"; background: var(--color-paper); overflow: visible; }
 @media (min-width: 861px) and (min-height: 400px) { body { height: 100svh; overflow: hidden; } }
 
-.brand { grid-area: brand; align-self: center; padding: 1.4rem 0 1.4rem var(--pad); font-family: 'DynaPuff', system-ui, sans-serif; font-weight: 700; font-size: 1.85rem; line-height: 1.1; letter-spacing: .02em; color: var(--rose); text-decoration: none; }
-.brand span { color: var(--plum); }
+.brand { grid-area: brand; align-self: center; padding: 1.4rem 0 1.4rem clamp(24px, 5vw, 88px); font-size: 1.85rem; }
 
-.actions { grid-area: actions; display: flex; align-items: center; justify-content: flex-end; gap: 1.3rem; padding: 1.4rem clamp(24px, 4vw, 64px) 1.4rem 0; }
-.actions a, .actions button { font: 600 .8rem/1 system-ui, sans-serif; letter-spacing: .15em; text-transform: uppercase; color: var(--plum); text-decoration: none; background: none; border: 0; cursor: pointer; padding: .4rem 0; opacity: .8; transition: opacity .15s; }
-.actions a:hover, .actions button:hover { opacity: 1; }
-.actions a.login { padding: .65rem 1.3rem; border: 1.5px solid var(--plum); border-radius: 999px; opacity: 1; transition: background .15s, color .15s; }
-.actions a.login:hover { background: var(--plum); color: #fff; }
+.actions { grid-area: actions; display: flex; align-items: center; justify-content: flex-end; gap: 1.2rem; padding: 1.4rem clamp(24px, 4vw, 64px) 1.4rem 0; position: relative; z-index: 2; }
+.actions button, .actions a { font: 600 1rem/1 var(--font-sans); color: var(--color-plum); text-decoration: none; background: none; border: 0; cursor: pointer; min-height: 2.75rem; padding: 0 .5rem; transition: color .15s; }
+.actions button:hover, .actions a:hover { color: var(--color-plum-deep); text-decoration: underline; text-underline-offset: 4px; }
+.actions a.login { padding: 0 1.4rem; border: 1.5px solid var(--color-plum); border-radius: var(--radius-pill); display: inline-flex; align-items: center; }
+.actions a.login:hover { background: var(--color-plum); color: #fff; text-decoration: none; }
 
-.copy { grid-area: copy; align-self: center; padding: 0 1.5rem 0 var(--pad); animation: rise .9s cubic-bezier(.2, .8, .2, 1) both .15s; }
-.eyebrow { font-size: .8rem; font-weight: 600; letter-spacing: .24em; text-transform: uppercase; color: var(--rose-deep); margin-bottom: 1.1rem; }
-h1 { font-family: var(--serif); font-weight: 500; font-size: 3.5rem; line-height: 1.07; letter-spacing: -.02em; color: var(--ink); }
-.copy p { margin-top: 1.2rem; max-width: 26rem; font-size: 1.05rem; line-height: 1.6; color: var(--muted); }
-.cta { display: flex; flex-wrap: wrap; gap: .8rem; margin-top: 1.9rem; }
-.btn { display: inline-block; padding: 1rem 1.8rem; border-radius: 999px; font: 600 .82rem/1 system-ui, sans-serif; letter-spacing: .12em; text-transform: uppercase; text-decoration: none; transition: transform .15s, background .15s, box-shadow .15s; }
-.btn.primary { background: var(--rose); color: #fff; box-shadow: 0 8px 24px rgba(199, 130, 131, .35); }
-.btn.primary:hover { background: var(--rose-deep); transform: translateY(-2px); }
-.btn.ghost { color: var(--plum); border: 1.5px solid rgba(116, 66, 83, .35); background: rgba(255, 255, 255, .5); }
-.btn.ghost:hover { border-color: var(--plum); background: rgba(255, 255, 255, .85); }
+.copy { grid-area: copy; align-self: center; padding: 0 1.5rem 0 clamp(24px, 5vw, 88px); animation: rise .8s var(--motion-ease) both .1s; position: relative; z-index: 2; }
+.eyebrow { font-size: 1.1rem; font-weight: 600; color: var(--color-rose-strong); margin-bottom: .9rem; }
+h1 { font-family: var(--font-serif); font-weight: 560; font-size: 3.6rem; line-height: 1.04; letter-spacing: -.025em; color: var(--color-ink); }
+.copy p { margin-top: 1.2rem; max-width: 27rem; font-size: 1.2rem; line-height: 1.6; color: var(--color-ink-soft); }
+.cta { display: flex; flex-wrap: wrap; gap: .8rem; margin-top: 2rem; }
+.btn { display: inline-flex; align-items: center; min-height: 3.25rem; padding: 0 1.8rem; border-radius: var(--radius-pill); font: 600 1.05rem/1 var(--font-sans); text-decoration: none; transition: transform .15s, background .15s; }
+.btn.primary { background: var(--color-plum); color: #fff; }
+.btn.primary:hover { background: var(--color-plum-deep); transform: translateY(-2px); }
+.btn.ghost { color: var(--color-plum); border: 1.5px solid var(--color-edge); background: transparent; }
+.btn.ghost:hover { border-color: var(--color-plum); background: var(--color-surface); }
 
-.foot { grid-area: foot; padding: 1.2rem 1.5rem 1.5rem var(--pad); font-size: .74rem; letter-spacing: .15em; text-transform: uppercase; line-height: 1.9; color: rgba(110, 95, 88, .85); }
-.foot i { font-style: normal; margin: 0 .5rem; opacity: .5; }
+.foot { grid-area: foot; padding: 1.2rem 1.5rem 1.6rem clamp(24px, 5vw, 88px); position: relative; z-index: 2; }
+.foot ul { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: .4rem 1.4rem; font-size: 1rem; color: var(--color-ink-soft); }
 
-.stage { grid-area: stage; position: relative; min-height: 0; background: var(--page); }
-#bg { position: absolute; inset: 0; background: var(--page); }
-.fade { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(to right, var(--page) 0%, rgba(230, 230, 230, 0) 16%), linear-gradient(to bottom, var(--page) 0%, rgba(230, 230, 230, 0) 9%); }
+.stage { grid-area: stage; position: relative; min-height: 0; background: var(--color-paper); }
+#bg { position: absolute; inset: 0; background: var(--color-paper); }
+.fade { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(to right, var(--color-paper) 0%, rgba(238, 236, 231, 0) 30%), linear-gradient(to bottom, var(--color-paper) 0%, rgba(238, 236, 231, 0) 16%), linear-gradient(to left, var(--color-paper) 0%, rgba(238, 236, 231, 0) 6%), linear-gradient(to top, var(--color-paper) 0%, rgba(238, 236, 231, 0) 8%); }
 
-@keyframes rise { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }
+@keyframes rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
 
 @media (max-width: 860px) {
   html { font-size: 16px; }
   body { grid-template-columns: 1fr auto; grid-template-rows: auto minmax(300px, 46svh) auto auto; grid-template-areas: "brand actions" "stage stage" "copy copy" "foot foot"; }
   .brand { padding: 1rem 0 1rem 22px; font-size: 1.6rem; }
-  .actions { padding: 1rem 22px 1rem 0; gap: .9rem; }
-  .actions a.login { padding: .5rem 1rem; }
-  .fade { background: linear-gradient(to bottom, var(--page) 0%, rgba(230, 230, 230, 0) 8%), linear-gradient(to top, var(--page) 0%, rgba(230, 230, 230, 0) 8%); }
+  .actions { padding: 1rem 22px 1rem 0; gap: .6rem; }
+  .fade { background: linear-gradient(to bottom, var(--color-paper) 0%, rgba(238, 236, 231, 0) 16%), linear-gradient(to top, var(--color-paper) 0%, rgba(238, 236, 231, 0) 16%), linear-gradient(to right, var(--color-paper) 0%, rgba(238, 236, 231, 0) 8%), linear-gradient(to left, var(--color-paper) 0%, rgba(238, 236, 231, 0) 8%); }
   .copy { padding: .4rem 22px 0; text-align: center; }
-  .eyebrow { margin-bottom: .6rem; }
-  h1 { font-size: clamp(32px, 9vw, 44px); }
-  .copy p { margin: .8rem auto 0; font-size: .97rem; }
+  h1 { font-size: clamp(34px, 9.5vw, 46px); }
+  .copy p { margin: .8rem auto 0; font-size: 1.05rem; }
   .cta { justify-content: center; margin-top: 1.4rem; gap: .6rem; }
-  .btn { padding: .95rem 1.5rem; }
-  .foot { padding: 1.1rem 22px 1.5rem; text-align: center; font-size: .66rem; letter-spacing: .1em; }
-  .foot i { margin: 0 .3rem; }
+  .foot { padding: 1.1rem 22px 1.6rem; }
+  .foot ul { justify-content: center; font-size: .95rem; }
 }
 @media (prefers-reduced-motion: reduce) { .copy { animation: none; } }
 </style>
 </head>
 <body>
-<a class="brand" href="{{ url_for('auth.index') }}">Quiz<span>Pup</span></a>
+<a class="brand wordmark" href="{{ url_for('auth.index') }}">Quiz<span>Pup</span></a>
 
 <nav class="actions">
-  <button id="sound" type="button" aria-label="Turn sound on">Sound off</button>
+  <button id="sound" type="button" aria-pressed="false" aria-label="Turn video sound on">Sound off</button>
   <a class="login" href="{{ url_for('auth.login') }}">Log in</a>
 </nav>
 
 <main class="copy">
-  <div class="eyebrow">Exam preparation for any exam</div>
+  <p class="eyebrow">Exam preparation for any exam</p>
   <h1>Ace any exam, the friendly way.</h1>
   <p>AI-generated quizzes, flashcards and note summaries for any exam or topic, together in one calm place to study.</p>
   <div class="cta">
@@ -81,7 +76,7 @@ h1 { font-family: var(--serif); font-weight: 500; font-size: 3.5rem; line-height
   </div>
 </main>
 
-<footer class="foot">AI Quizzes<i>·</i>Flashcards<i>·</i>SuperNotes<i>·</i>Timed Tests</footer>
+<footer class="foot"><ul><li>AI quizzes</li><li>Flashcards</li><li>SuperNotes</li><li>Timed tests</li></ul></footer>
 
 <div class="stage" aria-hidden="true">
   <div id="bg"></div>
@@ -92,7 +87,7 @@ h1 { font-family: var(--serif); font-weight: 500; font-size: 3.5rem; line-height
   const host = document.getElementById('bg');
   const root = host.attachShadow({ mode: 'closed' });
   const style = document.createElement('style');
-  style.textContent = ':host{display:block;overflow:hidden}video{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 62%;pointer-events:none}';
+  style.textContent = ':host{display:block;overflow:hidden}video{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 62%;pointer-events:none;mix-blend-mode:multiply}';
   const vid = document.createElement('video');
   vid.setAttribute('muted', '');
   vid.setAttribute('loop', '');
@@ -117,7 +112,8 @@ h1 { font-family: var(--serif); font-weight: 500; font-size: 3.5rem; line-height
     vid.muted = !vid.muted;
     if (!vid.muted) vid.play().catch(() => {});
     btn.textContent = vid.muted ? 'Sound off' : 'Sound on';
-    btn.setAttribute('aria-label', vid.muted ? 'Turn sound on' : 'Turn sound off');
+    btn.setAttribute('aria-label', vid.muted ? 'Turn video sound on' : 'Turn video sound off');
+    btn.setAttribute('aria-pressed', vid.muted ? 'false' : 'true');
   });
 </script>
 </body>
