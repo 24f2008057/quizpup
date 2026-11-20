@@ -1,3 +1,19 @@
+{% set title_map = {
+    'auth.login': 'Log in',
+    'auth.register': 'Create your account',
+    'auth.verify_email': 'Verify your email',
+    'auth.forgot_password': 'Reset your password',
+    'auth.verify_otp': 'Enter your reset code',
+    'auth.complete_oauth_profile_page': 'Complete your profile',
+    'dashboard.home': 'Home',
+    'dashboard.flashcards_view': 'Flashcards',
+    'dashboard.study_view': 'Notes',
+    'dashboard.account': 'Premium',
+    'profile.profile': 'Your profile',
+    'profile.edit_profile_page': 'Edit profile',
+    'quiz.run_quiz': 'Quiz in progress',
+} %}
+{% set page_title = title_map.get(request.endpoint) %}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -11,7 +27,7 @@
     <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon/favicon-16x16.png') }}">
     <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='favicon/apple-touch-icon.png') }}">
     <link rel="manifest" href="{{ url_for('static', filename='favicon/site.webmanifest') }}">
-    <title>{% block title %}QuizPup — Exam preparation for any exam{% endblock %}</title>
+    <title>{% block title %}{% if page_title %}{{ page_title }} — QuizPup{% else %}QuizPup — Exam preparation for any exam{% endif %}{% endblock %}</title>
     <link rel="preload" as="font" type="font/woff2" crossorigin href="{{ url_for('static', filename='fonts/figtree-latin-wght-normal.woff2') }}">
     <link rel="preload" as="font" type="font/woff2" crossorigin href="{{ url_for('static', filename='fonts/fraunces-latin-wght-normal.woff2') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
@@ -35,6 +51,7 @@
     'quiz.run_quiz': url_for('dashboard.home'),
 } %}
 {% set back_url = back_map.get(request.endpoint) %}
+
 {% set nav_items = [
     ('home', url_for('dashboard.home'), 'home.png', 'Home'),
     ('flashcards', url_for('dashboard.flashcards_view'), 'question.png', 'Flashcards'),
