@@ -62,7 +62,8 @@ h1 { font-family: var(--font-serif); font-weight: 560; font-size: 3.6rem; line-h
 <a class="brand wordmark" href="{{ url_for('auth.index') }}">Quiz<span>Pup</span></a>
 
 <nav class="actions">
-  <button id="sound" type="button" aria-pressed="false" aria-label="Turn video sound on">Sound off</button>
+  <button id="motion" type="button">Pause video</button>
+  <button id="sound" type="button">Sound off</button>
   <a class="login" href="{{ url_for('auth.login') }}">Log in</a>
 </nav>
 
@@ -103,17 +104,24 @@ h1 { font-family: var(--font-serif); font-weight: 560; font-size: 3.6rem; line-h
   root.append(style, vid);
 
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const start = () => { if (!reduce) vid.play().catch(() => {}); };
+  const motion = document.getElementById('motion');
+  let userPaused = reduce;
+  const syncMotion = () => { motion.textContent = userPaused ? 'Play video' : 'Pause video'; };
+  const start = () => { if (!userPaused) vid.play().catch(() => {}); };
+  syncMotion();
   start();
   document.addEventListener('pointerdown', start, { once: true });
+  motion.addEventListener('click', () => {
+    userPaused = !userPaused;
+    if (userPaused) vid.pause(); else vid.play().catch(() => {});
+    syncMotion();
+  });
 
   const btn = document.getElementById('sound');
   btn.addEventListener('click', () => {
     vid.muted = !vid.muted;
-    if (!vid.muted) vid.play().catch(() => {});
+    if (!vid.muted && !userPaused) vid.play().catch(() => {});
     btn.textContent = vid.muted ? 'Sound off' : 'Sound on';
-    btn.setAttribute('aria-label', vid.muted ? 'Turn video sound on' : 'Turn video sound off');
-    btn.setAttribute('aria-pressed', vid.muted ? 'false' : 'true');
   });
 </script>
 </body>
