@@ -12,10 +12,11 @@ from werkzeug.security import check_password_hash
 
 from extensions import db, limiter
 from services.privacy_service import (
-    delete_user_account, export_user_data, has_current_consent, purge_expired, record_consents
+    delete_user_account, export_user_data, has_current_consent, has_parent_consent,
+    purge_expired, record_consents, record_parental_consent
 )
 
-from services.age_service import parse_age_form
+from services.age_service import parse_age_form, read_parent_token, send_parent_request
 
 from . import privacy_bp
 
@@ -24,6 +25,8 @@ logger = logging.getLogger("quizpup")
 GATE_EXEMPT_ENDPOINTS = {
     'static', 'auth.logout', 'auth.ping_server', 'privacy.accept_terms',
     'privacy.privacy_policy', 'privacy.terms', 'privacy.subprocessors',
+    'privacy.parent_confirm', 'privacy.parent_pending', 'privacy.parent_resend',
+    'privacy.parent_change',
 }
 
 
@@ -49,6 +52,14 @@ def require_current_consent():
     if not current_user.is_authenticated:
         return None
     if has_current_consent(current_user):
+        if current_user.age_group == 'minor' and not has_parent_consent(current_user):
+            if _wants_json():
+                return jsonify({
+                    "success": False,
+                    "code": "parental_consent_required",
+                    "error": "A parent or guardian must confirm your account before you can continue.",
+                }), 403
+            return redirect(url_for('privacy.parent_pending'))
         return None
     if _wants_json():
         return jsonify({
@@ -103,6 +114,8 @@ def accept_terms():
             current_user.parent_email = parent_email
         record_consents(current_user.id, source='reacceptance')
         db.session.commit()
+        if ask_age and current_user.age_group == 'minor':
+            send_parent_request(current_user)
         return redirect(target)
     if has_current_consent(current_user):
         return redirect(target)
@@ -169,3 +182,63 @@ def register_privacy_cli(app):
     def purge_data_command():
         result = purge_expired()
         click.echo(json.dumps(result))
+
+
+@privacy_bp.route('/parent/confirm/<token>', methods=['GET', 'POST'])
+@limiter.limit("30 per hour")
+def parent_confirm(token):
+    user = read_parent_token(token)
+    if user is None:
+        return render_template('parent_confirm.html', state='invalid'), 400
+    if has_parent_consent(user):
+        return render_template('parent_confirm.html', state='done', child_name=user.first_name)
+    if request.method == 'POST':
+        if request.form.get('is_parent') != 'on' or request.form.get('accept_terms') != 'on':
+            flash('Please tick both boxes to confirm.', 'danger')
+            return render_template('parent_confirm.html', state='form', child_name=user.first_name), 400
+        record_parental_consent(user)
+        db.session.commit()
+        return render_template('parent_confirm.html', state='done', child_name=user.first_name)
+    return render_template('parent_confirm.html', state='form', child_name=user.first_name)
+
+
+@privacy_bp.route('/parent-pending')
+@login_required
+def parent_pending():
+    if current_user.age_group != 'minor' or has_parent_consent(current_user):
+        return redirect(url_for('dashboard.home'))
+    return render_template('parent_pending.html', parent_email=current_user.parent_email)
+
+
+@privacy_bp.route('/parent-pending/resend', methods=['POST'])
+@login_required
+@limiter.limit("5 per hour")
+def parent_resend():
+    if current_user.age_group == 'minor' and not has_parent_consent(current_user):
+        if send_parent_request(current_user):
+            flash('We sent the email again.', 'success')
+        else:
+            flash('We could not send the email right now. Please try again later.', 'danger')
+    return redirect(url_for('privacy.parent_pending'))
+
+
+@privacy_bp.route('/parent-pending/change', methods=['POST'])
+@login_required
+@limiter.limit("5 per hour")
+def parent_change():
+    if current_user.age_group != 'minor' or has_parent_consent(current_user):
+        return redirect(url_for('dashboard.home'))
+    _, parent_email, error = parse_age_form(
+        {'age_group': 'minor', 'parent_email': request.form.get('parent_email')},
+        current_user.email,
+    )
+    if error:
+        flash(error, 'danger')
+        return redirect(url_for('privacy.parent_pending'))
+    current_user.parent_email = parent_email
+    db.session.commit()
+    if send_parent_request(current_user):
+        flash('We sent the email to the new address.', 'success')
+    else:
+        flash('Saved, but we could not send the email right now. Please try again later.', 'danger')
+    return redirect(url_for('privacy.parent_pending'))

@@ -17,7 +17,7 @@ from services.security_utils import (
 )
 from services.supabase_client import supabase_client
 from services.privacy_service import record_consents
-from services.age_service import parse_age_form
+from services.age_service import parse_age_form, send_parent_request
 
 from . import auth_bp
 
@@ -110,6 +110,9 @@ def register():
             return redirect(url_for('auth.register'))
 
         session['pending_verification_user_id'] = new_user.id
+
+        if age_group == 'minor' and not send_parent_request(new_user):
+            logger.warning("Parent confirmation email could not be sent for user_id=%s", new_user.id)
 
         if send_verification_email(email, otp_code):
             flash('Account created! Check your email for a 6-digit verification code.', 'success')
@@ -375,6 +378,9 @@ def complete_oauth_profile_submit():
     db.session.flush()
     record_consents(new_user.id, source='oauth_signup')
     db.session.commit()
+
+    if age_group == 'minor' and not send_parent_request(new_user):
+        logger.warning("Parent confirmation email could not be sent for user_id=%s", new_user.id)
 
     session.pop('pending_oauth', None)
     login_user(new_user, remember=True)
