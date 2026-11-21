@@ -31,8 +31,8 @@
     <link rel="preload" as="font" type="font/woff2" crossorigin href="{{ url_for('static', filename='fonts/figtree-latin-wght-normal.woff2') }}">
     <link rel="preload" as="font" type="font/woff2" crossorigin href="{{ url_for('static', filename='fonts/fraunces-latin-wght-normal.woff2') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
-    <script defer src="https://cdn.jsdelivr.net/npm/@lottiefiles/lottie-player@2.0.4/dist/lottie-player.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/lottie-web@5.12.2/build/player/lottie.min.js"></script>
+    <script defer src="{{ url_for('static', filename='vendor/lottie-player-2.0.4.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='vendor/lottie-5.12.2.min.js') }}"></script>
 </head>
 
 {% set show_nav = current_user.is_authenticated and not hide_bottom_nav and view != 'quiz' %}
@@ -141,6 +141,16 @@
             <div class="page">
                 {% block content %}{% endblock %}
             </div>
+            {% if view != 'quiz' %}
+            <footer class="page pb-6 pt-2">
+                <nav aria-label="Legal" class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-ink-soft">
+                    <a href="{{ url_for('privacy.privacy_policy') }}" class="underline underline-offset-4 py-2">Privacy</a>
+                    <a href="{{ url_for('privacy.terms') }}" class="underline underline-offset-4 py-2">Terms</a>
+                    <a href="{{ url_for('privacy.subprocessors') }}" class="underline underline-offset-4 py-2">Sub-processors</a>
+                    <button type="button" data-cookie-settings class="underline underline-offset-4 py-2 cursor-pointer">Cookie settings</button>
+                </nav>
+            </footer>
+            {% endif %}
         </main>
 
         {% if show_nav %}
@@ -157,6 +167,8 @@
 
     </div>
 
+    {% include '_consent_banner.html' %}
+    <script src="{{ url_for('static', filename='js/consent.js') }}"></script>
     <script nonce="{{ csp_nonce() }}">
         (function () {
             var links = document.querySelectorAll('[data-back]');
