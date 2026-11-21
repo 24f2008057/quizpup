@@ -31,7 +31,6 @@ def edit_profile_page():
 def edit_profile():
     first_name = (request.form.get('first_name') or '').strip()[:100]
     last_name = (request.form.get('last_name') or '').strip()[:100]
-    phone = (request.form.get('phone') or '').strip()[:20]
 
     if not first_name or not last_name:
         flash('First and last name are required.', 'danger')
@@ -39,7 +38,6 @@ def edit_profile():
 
     current_user.first_name = first_name
     current_user.last_name = last_name
-    current_user.phone = phone
     db.session.commit()
     flash('Your details have been updated.', 'success')
     return redirect(url_for('profile.profile'))
