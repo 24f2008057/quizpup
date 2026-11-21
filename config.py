@@ -34,3 +34,10 @@ class Config:
     REMEMBER_COOKIE_SAMESITE = 'Lax'
     REMEMBER_COOKIE_SECURE = IS_PRODUCTION
     RATELIMIT_STORAGE_URI = os.environ.get('RATELIMIT_STORAGE_URI', 'memory://')
+
+    TERMS_VERSION = os.environ.get('TERMS_VERSION', '2026-11-draft-1')
+    PRIVACY_VERSION = os.environ.get('PRIVACY_VERSION', '2026-11-draft-1')
+    UNVERIFIED_ACCOUNT_DAYS = int(os.environ.get('UNVERIFIED_ACCOUNT_DAYS', '7'))
+    INACTIVE_ACCOUNT_DAYS = int(os.environ.get('INACTIVE_ACCOUNT_DAYS', '730'))
+    GEMINI_PAID_TIER = os.environ.get('GEMINI_PAID_TIER', 'false').lower() == 'true'
+    PRIVACY_CONTACT_EMAIL = os.environ.get('PRIVACY_CONTACT_EMAIL', '')
