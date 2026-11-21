@@ -1,0 +1,16 @@
+<fieldset class="space-y-3">
+    <legend class="field-label">Your age</legend>
+    <div class="flex items-start gap-3">
+        <input id="age_adult" name="age_group" type="radio" value="adult" required class="mt-1 h-5 w-5 shrink-0 accent-plum">
+        <label for="age_adult" class="text-sm text-ink leading-snug">I am 18 or older</label>
+    </div>
+    <div class="flex items-start gap-3">
+        <input id="age_minor" name="age_group" type="radio" value="minor" required class="mt-1 h-5 w-5 shrink-0 accent-plum">
+        <label for="age_minor" class="text-sm text-ink leading-snug">I am under 18</label>
+    </div>
+    <div>
+        <label class="field-label" for="parent_email">Parent or guardian email <span class="text-ink-soft font-normal">(required if you are under 18)</span></label>
+        <input class="field" id="parent_email" type="email" name="parent_email" maxlength="150" autocomplete="off" aria-describedby="parent_email_help">
+        <p id="parent_email_help" class="text-xs text-ink-soft mt-1">We will email them to confirm on your behalf. Use their address, not yours.</p>
+    </div>
+</fieldset>
