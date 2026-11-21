@@ -45,6 +45,34 @@ def has_current_consent(user):
     return True
 
 
+def has_parent_consent(user):
+    if user.age_group != "minor":
+        return True
+    latest = (
+        ConsentRecord.query
+        .filter_by(user_id=user.id, consent_type="parental")
+        .order_by(ConsentRecord.id.desc())
+        .first()
+    )
+    return bool(
+        latest
+        and latest.granted
+        and latest.parent_email == user.parent_email
+        and latest.policy_version == current_versions()["terms"]
+    )
+
+
+def record_parental_consent(user, source="parent_link"):
+    db.session.add(ConsentRecord(
+        user_id=user.id,
+        consent_type="parental",
+        granted=True,
+        policy_version=current_versions()["terms"],
+        source=source,
+        parent_email=user.parent_email,
+    ))
+
+
 def _iso(value):
     return value.isoformat() + "Z" if value else None
 
@@ -102,6 +130,7 @@ def export_user_data(user):
             "granted": c.granted,
             "policy_version": c.policy_version,
             "source": c.source,
+            "parent_email": c.parent_email,
             "recorded_at": _iso(c.created_at),
         }
         for c in ConsentRecord.query.filter_by(user_id=user.id).order_by(ConsentRecord.id).all()

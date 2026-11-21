@@ -1,4 +1,5 @@
 import os
+import html
 import logging
 import requests
 
@@ -56,4 +57,18 @@ def send_verification_email(target_email, otp_code):
         "Verify your QuizPup account",
         f"<p>Welcome to QuizPup! Your account verification code is: <strong>{otp_code}</strong></p>"
         f"<p>This code expires in {OTP_VALID_MINUTES} minutes.</p>"
+    )
+
+
+def send_parent_consent_email(parent_email, child_first_name, link):
+    name = html.escape(child_first_name or "A student")
+    safe_link = html.escape(link, quote=True)
+    return send_email(
+        parent_email,
+        "Please confirm your child's QuizPup account",
+        f"<p>Hello,</p>"
+        f"<p>{name} has signed up for QuizPup, an exam preparation app, and gave this address as their parent or guardian. "
+        f"Because they are under 18, they cannot use QuizPup until a parent or guardian confirms.</p>"
+        f"<p><a href=\"{safe_link}\">Review and confirm</a></p>"
+        f"<p>This link expires in 7 days. If you do not know this person or do not agree, ignore this email and the account will stay locked.</p>"
     )
