@@ -23,6 +23,18 @@ class Config:
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL', 'sqlite:///quiz_saas.db')
     if SQLALCHEMY_DATABASE_URI.startswith("postgres://"):
         SQLALCHEMY_DATABASE_URI = SQLALCHEMY_DATABASE_URI.replace("postgres://", "postgresql://", 1)
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        "pool_pre_ping": True,
+        "pool_recycle": 280,
+        "pool_size": 5,
+        "max_overflow": 5,
+        "connect_args": (
+            {"connect_timeout": 10, "prepare_threshold": None}
+            if "+psycopg://" in SQLALCHEMY_DATABASE_URI
+            else {"connect_timeout": 10} if SQLALCHEMY_DATABASE_URI.startswith("postgresql")
+            else {}
+        ),
+    }
     UPLOAD_FOLDER = 'uploads'
     MAX_CONTENT_LENGTH = 60 * 1024 * 1024
     REMEMBER_COOKIE_DURATION = timedelta(days=30)

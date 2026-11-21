@@ -1,7 +1,8 @@
 import os
 import logging
 
-from flask import Flask
+from flask import Flask, jsonify
+from sqlalchemy import text
 from werkzeug.middleware.proxy_fix import ProxyFix
 from dotenv import load_dotenv
 
@@ -60,8 +61,29 @@ def create_app():
     app.register_blueprint(privacy_bp)
     register_privacy_cli(app)
 
+    @app.route('/healthz')
+    @limiter.exempt
+    @csrf.exempt
+    def healthz():
+        try:
+            db.session.execute(text('SELECT 1'))
+            return jsonify({"status": "ok"}), 200
+        except Exception:
+            db.session.rollback()
+            return jsonify({"status": "database_unavailable"}), 503
+
     with app.app_context():
-        db.create_all()
+        try:
+            db.create_all()
+            from services.schema_sync import add_missing_columns, relax_user_phone
+            add_missing_columns()
+            relax_user_phone()
+        except Exception as exc:
+            db.session.rollback()
+            logger.error(
+                "Database unreachable at startup, continuing without schema check: %s",
+                exc.__class__.__name__
+            )
 
     return app
 
