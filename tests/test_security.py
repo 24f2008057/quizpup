@@ -242,7 +242,7 @@ PUBLIC_ENDPOINTS = {
     "static", "auth.index", "auth.login", "auth.register", "auth.verify_email",
     "auth.resend_verification_email", "auth.oauth_callback_page", "auth.oauth_callback_exchange",
     "auth.complete_oauth_profile_page", "auth.complete_oauth_profile_submit", "auth.ping_server",
-    "auth.forgot_password", "auth.verify_otp", "healthz",
+    "auth.forgot_password", "auth.verify_otp", "healthz", "privacy.parent_confirm",
     "privacy.privacy_policy", "privacy.terms", "privacy.subprocessors",
 }
 

@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}Parent or guardian confirmation — QuizPup{% endblock %}
+{% block content %}
+<div class="px-5 py-8 sm:py-14">
+    <div class="page-narrow">
+        <div class="bg-surface border border-line p-6 sm:p-8 rounded-card elevate-sm space-y-5">
+            {% if state == 'invalid' %}
+            <h1 class="text-2xl">This link cannot be used</h1>
+            <p class="text-sm text-ink-soft">The link is invalid, has expired, or the parent email was changed. Ask your child to sign in to QuizPup and choose to send the email again.</p>
+            {% elif state == 'done' %}
+            <h1 class="text-2xl">Thank you</h1>
+            <p class="text-sm text-ink-soft">{{ child_name }}'s QuizPup account is now confirmed. You can close this page.</p>
+            {% else %}
+            <h1 class="text-2xl">Confirm {{ child_name }}'s account</h1>
+            <p class="text-sm text-ink-soft">{{ child_name }} signed up for QuizPup, an exam preparation app, and is under 18. A parent or guardian must confirm before they can use it.</p>
+            {% with messages = get_flashed_messages() %}
+            {% for message in messages %}
+            <div role="alert" class="text-sm p-3 rounded-control font-medium bg-danger-bg border border-danger-line text-danger">{{ message }}</div>
+            {% endfor %}
+            {% endwith %}
+            <form method="POST" class="space-y-4">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="flex items-start gap-3">
+                    <input id="is_parent" name="is_parent" type="checkbox" required class="mt-1 h-5 w-5 shrink-0 accent-plum">
+                    <label for="is_parent" class="text-sm text-ink leading-snug">I am 18 or older and I am the parent or legal guardian of {{ child_name }}.</label>
+                </div>
+                <div class="flex items-start gap-3">
+                    <input id="accept_terms" name="accept_terms" type="checkbox" required class="mt-1 h-5 w-5 shrink-0 accent-plum">
+                    <label for="accept_terms" class="text-sm text-ink leading-snug">On behalf of my child, I agree to the <a href="{{ url_for('privacy.terms') }}" target="_blank" rel="noopener" class="text-plum font-semibold underline underline-offset-4">Terms of Service</a> and have read the <a href="{{ url_for('privacy.privacy_policy') }}" target="_blank" rel="noopener" class="text-plum font-semibold underline underline-offset-4">Privacy Policy</a>.</label>
+                </div>
+                <button type="submit" class="btn-primary w-full font-semibold min-h-12 rounded-control text-base cursor-pointer">Confirm</button>
+            </form>
+            <p class="text-sm text-ink-soft">If you do not know this person or do not agree, close this page. The account will stay locked.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

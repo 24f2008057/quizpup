@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}Waiting for your parent — QuizPup{% endblock %}
+{% block content %}
+<div class="px-5 py-8 sm:py-14">
+    <div class="page-narrow">
+        <div class="bg-surface border border-line p-6 sm:p-8 rounded-card elevate-sm space-y-5">
+            <h1 class="text-2xl">Waiting for your parent or guardian</h1>
+            <p class="text-sm text-ink-soft">Because you are under 18, a parent or guardian must confirm your account before you can use QuizPup. We emailed <strong class="text-ink">{{ parent_email }}</strong>. The link works for 7 days.</p>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+            <div role="alert" class="text-sm p-3 rounded-control font-medium {% if category == 'success' %}bg-surface border border-line text-ink{% else %}bg-danger-bg border border-danger-line text-danger{% endif %}">{{ message }}</div>
+            {% endfor %}
+            {% endwith %}
+            <form method="POST" action="{{ url_for('privacy.parent_resend') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn-primary w-full font-semibold min-h-12 rounded-control text-base cursor-pointer">Send the email again</button>
+            </form>
+            <form method="POST" action="{{ url_for('privacy.parent_change') }}" class="space-y-3">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div>
+                    <label class="field-label" for="parent_email">Use a different parent or guardian email</label>
+                    <input class="field" id="parent_email" type="email" name="parent_email" maxlength="150" required autocomplete="off">
+                </div>
+                <button type="submit" class="btn-secondary w-full font-semibold min-h-12 rounded-control text-base cursor-pointer">Save and send</button>
+            </form>
+            <p class="text-sm text-center"><a href="{{ url_for('auth.logout') }}" class="text-plum font-semibold underline underline-offset-4 py-2 inline-block">Log out</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

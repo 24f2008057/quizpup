@@ -89,4 +89,5 @@ class ConsentRecord(db.Model):
     granted = db.Column(db.Boolean, nullable=False)
     policy_version = db.Column(db.String(40), nullable=False)
     source = db.Column(db.String(40), nullable=False)
+    parent_email = db.Column(db.String(150), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
