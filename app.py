@@ -23,6 +23,8 @@ from blueprints.profile import profile_bp
 from blueprints.flashcards import flashcards_bp
 from blueprints.notes import notes_bp
 from blueprints.quiz import quiz_bp
+from blueprints.privacy import privacy_bp
+from blueprints.privacy.routes import register_privacy_cli
 
 
 def create_app():
@@ -55,6 +57,8 @@ def create_app():
     app.register_blueprint(flashcards_bp)
     app.register_blueprint(notes_bp)
     app.register_blueprint(quiz_bp)
+    app.register_blueprint(privacy_bp)
+    register_privacy_cli(app)
 
     with app.app_context():
         db.create_all()
