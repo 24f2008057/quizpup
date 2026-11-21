@@ -21,7 +21,7 @@ SIGNUP = {
 
 @patch("blueprints.auth.routes.send_verification_email", return_value=True)
 def test_register_records_consent_with_version_and_timestamp(mock_send, client, app):
-    resp = client.post("/register", data={**SIGNUP, "accept_terms": "on", "confirm_age": "on"})
+    resp = client.post("/register", data={**SIGNUP, "accept_terms": "on", "age_group": "adult"})
     assert resp.status_code == 302
     user = User.query.filter_by(email="grace@example.com").first()
     records = ConsentRecord.query.filter_by(user_id=user.id).all()
@@ -32,14 +32,14 @@ def test_register_records_consent_with_version_and_timestamp(mock_send, client, 
 
 
 def test_register_requires_both_checkboxes(client):
-    for extra in ({}, {"accept_terms": "on"}, {"confirm_age": "on"}):
+    for extra in ({}, {"accept_terms": "on"}, {"age_group": "adult"}):
         client.post("/register", data={**SIGNUP, **extra})
         assert User.query.filter_by(email="grace@example.com").first() is None
 
 
 def test_register_form_has_unticked_required_consent_checkboxes_and_no_phone(client):
     html = client.get("/register").get_data(as_text=True)
-    assert 'name="accept_terms"' in html and 'name="confirm_age"' in html
+    assert 'name="accept_terms"' in html and 'name="age_group"' in html
     assert "checked" not in html.split('name="accept_terms"')[1].split(">")[0]
     assert 'name="phone"' not in html
 
@@ -58,7 +58,7 @@ def test_accept_terms_records_consent_and_unlocks_app(client):
     login(client, "old2@example.com", "Correct-Horse9!")
     bad = client.post("/accept-terms", data={"accept_terms": "on"})
     assert bad.status_code == 400
-    ok = client.post("/accept-terms", data={"accept_terms": "on", "confirm_age": "on", "next": "/flashcards"})
+    ok = client.post("/accept-terms", data={"accept_terms": "on", "age_group": "adult", "next": "/flashcards"})
     assert ok.status_code == 302 and ok.headers["Location"].endswith("/flashcards")
     assert ConsentRecord.query.filter_by(user_id=user.id, source="reacceptance").count() == 2
     assert client.get("/home").status_code == 200
@@ -68,7 +68,7 @@ def test_accept_terms_rejects_external_redirect(client):
     make_user(email="old3@example.com", consented=False)
     login(client, "old3@example.com", "Correct-Horse9!")
     resp = client.post("/accept-terms", data={
-        "accept_terms": "on", "confirm_age": "on", "next": "//evil.example.com"})
+        "accept_terms": "on", "age_group": "adult", "next": "//evil.example.com"})
     assert "evil.example.com" not in resp.headers["Location"]
 
 

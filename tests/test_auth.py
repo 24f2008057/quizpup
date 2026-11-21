@@ -18,7 +18,7 @@ def test_register_creates_unverified_user_and_redirects_to_verify(mock_send, cli
         "first_name": "Grace",
         "last_name": "Hopper",
         "email": "grace@example.com",
-        "accept_terms": "on", "confirm_age": "on",
+        "accept_terms": "on", "age_group": "adult",
     }, follow_redirects=False)
 
     assert resp.status_code == 302
@@ -37,7 +37,7 @@ def test_register_rejects_weak_password(client):
         "username": "weakpw",
         "password": "alllowercase",  # no digit, no special char
         "first_name": "A", "last_name": "B",
-        "email": "weak@example.com", "accept_terms": "on", "confirm_age": "on",
+        "email": "weak@example.com", "accept_terms": "on", "age_group": "adult",
     }, follow_redirects=False)
 
     assert resp.status_code == 302
@@ -51,7 +51,7 @@ def test_register_rejects_duplicate_email(client):
         "username": "someoneelse",
         "password": "Correct-Horse9!",
         "first_name": "A", "last_name": "B",
-        "email": "taken@example.com", "accept_terms": "on", "confirm_age": "on",
+        "email": "taken@example.com", "accept_terms": "on", "age_group": "adult",
     }, follow_redirects=False)
 
     assert resp.status_code == 302
@@ -65,7 +65,7 @@ def test_register_rejects_duplicate_username(client):
         "username": "dupeusername",
         "password": "Correct-Horse9!",
         "first_name": "A", "last_name": "B",
-        "email": "second@example.com", "accept_terms": "on", "confirm_age": "on",
+        "email": "second@example.com", "accept_terms": "on", "age_group": "adult",
     }, follow_redirects=False)
 
     assert resp.status_code == 302

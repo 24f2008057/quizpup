@@ -116,6 +116,8 @@ def export_user_data(user):
             "email": user.email,
             "phone": user.phone,
             "sign_in_method": user.auth_provider,
+            "age_group": user.age_group,
+            "parent_or_guardian_email": user.parent_email,
             "plan": user.subscription_status,
             "email_verified": bool(user.is_verified),
             "created_at": _iso(user.created_at),
