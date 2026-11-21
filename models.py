@@ -11,7 +11,7 @@ class User(UserMixin, db.Model):
     first_name = db.Column(db.String(100), nullable=False)
     last_name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(150), unique=True, nullable=False)
-    phone = db.Column(db.String(20), nullable=False)
+    phone = db.Column(db.String(20), nullable=True)
     subscription_status = db.Column(db.String(50), default="Free Tier")
     is_verified = db.Column(db.Boolean, default=False, nullable=False)
     verification_otp = db.Column(db.String(6), nullable=True)
@@ -23,6 +23,8 @@ class User(UserMixin, db.Model):
     email_change_otp_expires = db.Column(db.DateTime, nullable=True)
     supabase_uid = db.Column(db.String(255), unique=True, nullable=True)
     auth_provider = db.Column(db.String(20), default="password", nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=True)
+    last_login_at = db.Column(db.DateTime, nullable=True)
 
     def session_fingerprint(self):
         return hashlib.sha256((self.password_hash or '').encode('utf-8')).hexdigest()[:16]
@@ -76,3 +78,13 @@ class SuperNote(db.Model):
     summary_html = db.Column(db.Text, nullable=True)
     pdf_data = db.Column(db.LargeBinary, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class ConsentRecord(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    consent_type = db.Column(db.String(40), nullable=False)
+    granted = db.Column(db.Boolean, nullable=False)
+    policy_version = db.Column(db.String(40), nullable=False)
+    source = db.Column(db.String(40), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
