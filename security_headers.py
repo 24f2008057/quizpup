@@ -24,10 +24,10 @@ def register_security_hooks(app):
         nonce = getattr(g, 'csp_nonce', '')
         csp = (
             "default-src 'self'; "
-            f"script-src 'self' 'nonce-{nonce}' https://cdn.jsdelivr.net; "
+            f"script-src 'self' 'nonce-{nonce}'; "
             "script-src-attr 'unsafe-inline'; "
-            "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
-            "font-src 'self' data: https://cdn.jsdelivr.net; "
+            "style-src 'self' 'unsafe-inline'; "
+            "font-src 'self' data:; "
             "img-src 'self' data: blob:; "
             f"connect-src 'self' {SUPABASE_URL or ''}; "
             "frame-ancestors 'none'; "
