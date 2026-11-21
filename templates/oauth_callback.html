@@ -7,7 +7,7 @@
 </div>
 
 <script type="application/json" id="supabase-config">{"url": {{ supabase_url|tojson }}, "anonKey": {{ supabase_anon_key|tojson }}}</script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
+<script src="{{ url_for('static', filename='vendor/supabase-js-2.118.0.js') }}"></script>
 <script nonce="{{ csp_nonce() }}">
     (function () {
         var statusEl = document.getElementById('oauthStatusText');

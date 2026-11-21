@@ -79,6 +79,7 @@
                     <input type="file" name="pdf_file" accept=".pdf" class="sr-only" id="pdfFileInput" aria-describedby="file-name">
                 </label>
                 <p id="file-name" class="text-xs text-ink-soft mt-1">No file chosen</p>
+                {% with notice_id='quiz-ai-notice' %}{% include '_ai_notice.html' %}{% endwith %}
             </div>
 
             <div>
@@ -210,6 +211,7 @@
                     <input type="file" name="note_file" id="note_file_input" accept="image/*,.pdf" class="sr-only" aria-describedby="note-file-name">
                 </label>
                 <p id="note-file-name" class="text-xs text-ink-soft mt-1">No images or PDFs parsed yet</p>
+                {% with notice_id='notes-ai-notice' %}{% include '_ai_notice.html' %}{% endwith %}
             </div>
             <button type="submit" id="studyBtn"
                 class="btn-accent w-full font-bold py-3.5 rounded-control text-sm elevate-md cursor-pointer">
@@ -329,11 +331,6 @@
                 </div>
             </div>
             <div>
-                <span class="block text-xs font-bold text-ink-soft mb-0.5">Phone</span>
-                <p class="text-sm font-semibold text-plum bg-blush/30 p-2.5 rounded-control">{{ current_user.phone
-                    or '—' }}</p>
-            </div>
-            <div>
                 <span class="block text-xs font-bold text-ink-soft mb-0.5">Email Address</span>
                 <p class="text-sm font-semibold text-plum bg-blush/30 p-2.5 rounded-control">{{ current_user.email
                     or '—' }}</p>
@@ -350,6 +347,30 @@
                 Log out
             </a>
         </div>
+    </div>
+
+    <div class="bg-surface border border-line rounded-card p-6 elevate-sm space-y-4 mt-4">
+        <h2 class="text-xl">Privacy and data</h2>
+        <p class="text-sm text-ink-soft leading-relaxed">You can download a copy of everything QuizPup holds about you, or delete your account and all of its data. See our <a href="{{ url_for('privacy.privacy_policy') }}" class="text-plum font-semibold underline underline-offset-4">Privacy Policy</a> and the <a href="{{ url_for('privacy.subprocessors') }}" class="text-plum font-semibold underline underline-offset-4">services that process your data</a>.</p>
+        <form action="{{ url_for('privacy.export_data') }}" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn-secondary w-full font-semibold min-h-12 rounded-control text-base cursor-pointer">Download my data</button>
+        </form>
+        <details class="border border-danger-line rounded-control">
+            <summary class="cursor-pointer font-semibold text-danger min-h-12 flex items-center px-4 rounded-control">Delete my account</summary>
+            <form action="{{ url_for('privacy.delete_account') }}" method="POST" class="p-4 space-y-3">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <p class="text-sm text-ink leading-relaxed">This permanently deletes your account, quizzes, flashcards and notes. It cannot be undone.</p>
+                {% if (current_user.auth_provider or 'password') == 'password' %}
+                <label for="delete_password" class="block text-xs font-bold text-ink-soft">Enter your password to confirm</label>
+                <input id="delete_password" name="password" type="password" required autocomplete="current-password" class="field">
+                {% else %}
+                <label for="delete_confirm" class="block text-xs font-bold text-ink-soft">Type DELETE to confirm</label>
+                <input id="delete_confirm" name="confirm_text" type="text" required autocomplete="off" class="field">
+                {% endif %}
+                <button type="submit" class="btn-danger w-full font-semibold min-h-12 rounded-control text-base cursor-pointer">Delete everything</button>
+            </form>
+        </details>
     </div>
 
     {% elif view == 'edit_profile' %}
@@ -380,11 +401,6 @@
                     <input type="text" id="pf_last_name" autocomplete="family-name" name="last_name" value="{{ current_user.last_name or '' }}" required
                         class="w-full text-sm font-semibold text-plum bg-blush/30 p-2.5 rounded-control border border-transparent focus:border-edge">
                 </div>
-            </div>
-            <div>
-                <label for="pf_phone" class="block text-xs font-bold text-ink-soft mb-0.5">Phone</label>
-                <input type="tel" id="pf_phone" autocomplete="tel" name="phone" value="{{ current_user.phone or '' }}"
-                    class="w-full text-sm font-semibold text-plum bg-blush/30 p-2.5 rounded-control border border-transparent focus:border-edge">
             </div>
             <button type="submit"
                 class="btn-primary w-full font-bold py-3 rounded-control text-xs elevate-sm">

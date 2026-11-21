@@ -37,9 +37,15 @@
                         <input class="field" id="last_name" type="text" name="last_name" required value="{{ pending.last_name }}" autocomplete="family-name">
                     </div>
                 </div>
-                <div>
-                    <label class="field-label" for="phone">Phone number</label>
-                    <input class="field" id="phone" type="tel" name="phone" required autocomplete="tel">
+<div class="space-y-3 pt-1">
+                    <div class="flex items-start gap-3">
+                        <input id="accept_terms" name="accept_terms" type="checkbox" required class="mt-1 h-5 w-5 shrink-0 accent-plum">
+                        <label for="accept_terms" class="text-sm text-ink leading-snug">I agree to the <a href="{{ url_for('privacy.terms') }}" target="_blank" rel="noopener" class="text-plum font-semibold underline underline-offset-4">Terms of Service</a> and have read the <a href="{{ url_for('privacy.privacy_policy') }}" target="_blank" rel="noopener" class="text-plum font-semibold underline underline-offset-4">Privacy Policy</a>.</label>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <input id="confirm_age" name="confirm_age" type="checkbox" required class="mt-1 h-5 w-5 shrink-0 accent-plum">
+                        <label for="confirm_age" class="text-sm text-ink leading-snug">I am 18 years or older.</label>
+                    </div>
                 </div>
                 <button type="submit" class="btn-primary w-full font-semibold min-h-12 rounded-control text-base cursor-pointer">Finish setup</button>
             </form>
