@@ -15,6 +15,8 @@ from services.privacy_service import (
     delete_user_account, export_user_data, has_current_consent, purge_expired, record_consents
 )
 
+from services.age_service import parse_age_form
+
 from . import privacy_bp
 
 logger = logging.getLogger("quizpup")
@@ -88,15 +90,23 @@ def subprocessors():
 def accept_terms():
     target = _safe_next(request.values.get('next'))
     if request.method == 'POST':
-        if request.form.get('accept_terms') != 'on' or request.form.get('confirm_age') != 'on':
-            flash('Please tick both boxes to continue.', 'danger')
-            return render_template('accept_terms.html', next_url=target), 400
+        ask_age = current_user.age_group is None
+        if request.form.get('accept_terms') != 'on':
+            flash('Please accept the Terms and Privacy Policy to continue.', 'danger')
+            return render_template('accept_terms.html', next_url=target, ask_age=ask_age), 400
+        if ask_age:
+            age_group, parent_email, age_error = parse_age_form(request.form, current_user.email)
+            if age_error:
+                flash(age_error, 'danger')
+                return render_template('accept_terms.html', next_url=target, ask_age=True), 400
+            current_user.age_group = age_group
+            current_user.parent_email = parent_email
         record_consents(current_user.id, source='reacceptance')
         db.session.commit()
         return redirect(target)
     if has_current_consent(current_user):
         return redirect(target)
-    return render_template('accept_terms.html', next_url=target)
+    return render_template('accept_terms.html', next_url=target, ask_age=current_user.age_group is None)
 
 
 @privacy_bp.route('/account/data/export', methods=['POST'])

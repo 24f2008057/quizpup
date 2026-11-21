@@ -17,6 +17,7 @@ from services.security_utils import (
 )
 from services.supabase_client import supabase_client
 from services.privacy_service import record_consents
+from services.age_service import parse_age_form
 
 from . import auth_bp
 
@@ -47,7 +48,6 @@ def register():
         last_name = (request.form.get('last_name') or '').strip()
         email = normalize_email(request.form.get('email'))
         accepted = request.form.get('accept_terms') == 'on'
-        adult = request.form.get('confirm_age') == 'on'
 
         if not email:
             flash('Email address is required.', 'danger')
@@ -69,8 +69,13 @@ def register():
             flash(PASSWORD_REQUIREMENTS_MESSAGE, 'danger')
             return redirect(url_for('auth.register'))
 
-        if not accepted or not adult:
-            flash('Please accept the Terms and Privacy Policy and confirm your age to create an account.', 'danger')
+        if not accepted:
+            flash('Please accept the Terms and Privacy Policy to create an account.', 'danger')
+            return redirect(url_for('auth.register'))
+
+        age_group, parent_email, age_error = parse_age_form(request.form, email)
+        if age_error:
+            flash(age_error, 'danger')
             return redirect(url_for('auth.register'))
 
         if User.query.filter(func.lower(User.username) == username.lower()).first():
@@ -87,6 +92,8 @@ def register():
             first_name=first_name,
             last_name=last_name,
             email=email,
+            age_group=age_group,
+            parent_email=parent_email,
             is_verified=False,
             verification_otp=otp_code,
             verification_otp_expires=datetime.utcnow() + timedelta(minutes=OTP_VALID_MINUTES),
@@ -325,7 +332,6 @@ def complete_oauth_profile_submit():
     first_name = (request.form.get('first_name') or '').strip()[:100]
     last_name = (request.form.get('last_name') or '').strip()[:100]
     accepted = request.form.get('accept_terms') == 'on'
-    adult = request.form.get('confirm_age') == 'on'
 
     if not username or not first_name or not last_name:
         flash('Please fill in all fields to finish setting up your account.', 'error')
@@ -335,8 +341,13 @@ def complete_oauth_profile_submit():
         flash('That username is too long.', 'error')
         return render_template('complete_profile.html', pending=pending)
 
-    if not accepted or not adult:
-        flash('Please accept the Terms and Privacy Policy and confirm your age to continue.', 'error')
+    if not accepted:
+        flash('Please accept the Terms and Privacy Policy to continue.', 'error')
+        return render_template('complete_profile.html', pending=pending)
+
+    age_group, parent_email, age_error = parse_age_form(request.form, pending['email'])
+    if age_error:
+        flash(age_error, 'error')
         return render_template('complete_profile.html', pending=pending)
 
     if User.query.filter(func.lower(User.username) == username.lower()).first():
@@ -356,7 +367,9 @@ def complete_oauth_profile_submit():
         email=normalize_email(pending['email']),
         is_verified=True,
         supabase_uid=pending['supabase_uid'],
-        auth_provider=pending['provider']
+        auth_provider=pending['provider'],
+        age_group=age_group,
+        parent_email=parent_email
     )
     db.session.add(new_user)
     db.session.flush()

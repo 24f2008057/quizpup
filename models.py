@@ -25,6 +25,8 @@ class User(UserMixin, db.Model):
     auth_provider = db.Column(db.String(20), default="password", nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=True)
     last_login_at = db.Column(db.DateTime, nullable=True)
+    age_group = db.Column(db.String(10), nullable=True)
+    parent_email = db.Column(db.String(150), nullable=True)
 
     def session_fingerprint(self):
         return hashlib.sha256((self.password_hash or '').encode('utf-8')).hexdigest()[:16]
