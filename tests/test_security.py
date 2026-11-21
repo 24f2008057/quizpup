@@ -56,7 +56,7 @@ def test_legacy_plain_id_session_is_rejected(app):
 def test_registration_blocks_case_variant_duplicate_email(client):
     payload = {
         "username": "first", "password": "Correct-Horse9!", "first_name": "A",
-        "last_name": "B", "email": "Victim@Example.com", "phone": "9999999999",
+        "last_name": "B", "email": "Victim@Example.com", "accept_terms": "on", "confirm_age": "on",
     }
     with patch("blueprints.auth.routes.send_verification_email", return_value=True):
         client.post("/register", data=payload)
@@ -70,7 +70,7 @@ def test_registration_blocks_case_variant_duplicate_email(client):
 def test_registration_rejects_invalid_email_and_overlong_fields(client):
     base = {
         "username": "u", "password": "Correct-Horse9!", "first_name": "A",
-        "last_name": "B", "email": "not-an-email", "phone": "9999999999",
+        "last_name": "B", "email": "not-an-email", "accept_terms": "on", "confirm_age": "on",
     }
     client.post("/register", data=base)
     assert User.query.count() == 0
@@ -243,6 +243,7 @@ PUBLIC_ENDPOINTS = {
     "auth.resend_verification_email", "auth.oauth_callback_page", "auth.oauth_callback_exchange",
     "auth.complete_oauth_profile_page", "auth.complete_oauth_profile_submit", "auth.ping_server",
     "auth.forgot_password", "auth.verify_otp",
+    "privacy.privacy_policy", "privacy.terms", "privacy.subprocessors",
 }
 
 UNSAFE = {"POST", "PUT", "PATCH", "DELETE"}

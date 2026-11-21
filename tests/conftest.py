@@ -22,6 +22,7 @@ from werkzeug.security import generate_password_hash
 from app import create_app
 from extensions import db as _db
 from models import User, QuizSession, QuizQuestion
+from services.privacy_service import record_consents
 
 
 @pytest.fixture(scope="session")
@@ -66,7 +67,7 @@ def client(app):
 
 
 def make_user(email="student@example.com", username=None, password="Correct-Horse9!",
-              is_verified=True, **overrides):
+              is_verified=True, consented=True, **overrides):
     if username is None:
         username = email.split("@")[0].lower().replace(".", "_")
     user = User(
@@ -75,12 +76,14 @@ def make_user(email="student@example.com", username=None, password="Correct-Hors
         first_name=overrides.pop("first_name", "Ada"),
         last_name=overrides.pop("last_name", "Lovelace"),
         email=email,
-        phone=overrides.pop("phone", "9999999999"),
         is_verified=is_verified,
         **overrides,
     )
     _db.session.add(user)
     _db.session.commit()
+    if consented:
+        record_consents(user.id, source='test')
+        _db.session.commit()
     return user
 
 
