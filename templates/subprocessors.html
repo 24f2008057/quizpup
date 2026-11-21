@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}Sub-processors — QuizPup{% endblock %}
+{% block content %}
+<div class="py-6 space-y-5">
+    <h1 class="text-3xl">Services that process your data</h1>
+    <p class="text-sm text-ink-soft leading-relaxed">QuizPup uses these providers to run the service. We will update this page when the list changes.</p>
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm border border-line rounded-control">
+            <caption class="sr-only">Sub-processors used by QuizPup</caption>
+            <thead class="bg-sunken text-left">
+                <tr>
+                    <th scope="col" class="p-3">Provider</th>
+                    <th scope="col" class="p-3">Purpose</th>
+                    <th scope="col" class="p-3">Data involved</th>
+                    <th scope="col" class="p-3">Location</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="border-t border-line">
+                    <th scope="row" class="p-3 text-left">Supabase</th>
+                    <td class="p-3">Database and sign-in (Google and GitHub)</td>
+                    <td class="p-3">Account details, quizzes, flashcards, notes, consent records</td>
+                    <td class="p-3">[Project region to be confirmed]</td>
+                </tr>
+                <tr class="border-t border-line">
+                    <th scope="row" class="p-3 text-left">Render</th>
+                    <td class="p-3">Application hosting</td>
+                    <td class="p-3">All data in transit; temporary uploaded files while processing</td>
+                    <td class="p-3">[Service region to be confirmed]</td>
+                </tr>
+                <tr class="border-t border-line">
+                    <th scope="row" class="p-3 text-left">Google (Gemini API)</th>
+                    <td class="p-3">AI generation of quizzes, flashcards and notes</td>
+                    <td class="p-3">Topics, text and files you submit; not your name or email</td>
+                    <td class="p-3">[To be confirmed]</td>
+                </tr>
+                <tr class="border-t border-line">
+                    <th scope="row" class="p-3 text-left">Brevo</th>
+                    <td class="p-3">Sending verification and password-reset emails</td>
+                    <td class="p-3">Email address and the code being sent</td>
+                    <td class="p-3">[To be confirmed]</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="text-sm text-ink-soft">Payment processing will be listed here before paid plans launch.</p>
+</div>
+{% endblock %}

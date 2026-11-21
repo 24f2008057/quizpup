@@ -1,0 +1,8 @@
+<div id="consent-banner" role="region" aria-label="Cookie notice" hidden
+    class="fixed inset-x-3 bottom-24 z-[9000] mx-auto max-w-xl rounded-card border border-line bg-surface p-4 elevate-md lg:bottom-4">
+    <p class="text-sm text-ink leading-relaxed">QuizPup uses only the cookies needed to keep you signed in and protect forms. We do not use advertising cookies. If we add optional analytics later, they will stay off unless you allow them. <a href="{{ url_for('privacy.privacy_policy') }}" class="text-plum font-semibold underline underline-offset-4">Privacy Policy</a></p>
+    <div class="mt-3 flex flex-wrap gap-2">
+        <button type="button" id="consent-reject" class="btn-secondary min-h-11 flex-1 rounded-control px-4 text-sm font-semibold cursor-pointer">Essential only</button>
+        <button type="button" id="consent-accept" class="btn-secondary min-h-11 flex-1 rounded-control px-4 text-sm font-semibold cursor-pointer">Allow optional</button>
+    </div>
+</div>

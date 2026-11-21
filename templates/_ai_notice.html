@@ -1,0 +1,5 @@
+{% if ai_free_tier %}
+<p class="text-xs text-ink-soft leading-relaxed mt-2" id="{{ notice_id }}">Uploads are processed by Google's Gemini AI. On QuizPup's current Google plan, Google may use submitted content to improve its products and people may review it. Please do not upload personal details or anyone else's private information.</p>
+{% else %}
+<p class="text-xs text-ink-soft leading-relaxed mt-2" id="{{ notice_id }}">Uploads are processed by Google's Gemini AI to generate your content. QuizPup does not use your content to train AI models.</p>
+{% endif %}

@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block title %}{% if page == 'privacy' %}Privacy Policy{% else %}Terms of Service{% endif %} — QuizPup{% endblock %}
+{% block content %}
+<div class="py-6 space-y-5">
+    <div class="bg-warning-bg border border-line rounded-control p-4 text-sm text-warning font-medium" role="note">
+        Draft placeholder. This text has not been reviewed by a lawyer and will be replaced before launch.
+    </div>
+    {% if page == 'privacy' %}
+    <h1 class="text-3xl">Privacy Policy</h1>
+    <p class="text-sm text-ink-soft">Version {{ privacy_version }}</p>
+    <h2 class="text-xl">What we collect</h2>
+    <p class="text-sm leading-relaxed">Your name, username, email address and a hashed password when you sign up. If you sign in with Google or GitHub, we receive your name and verified email from that provider. We also store the quizzes, flashcards and notes you create, your answers and scores, and a record of when you accepted our policies. We do not ask for your phone number.</p>
+    <h2 class="text-xl">How AI is used</h2>
+    <p class="text-sm leading-relaxed">Topics you enter and files you upload are sent to Google's Gemini API to generate quizzes, flashcards and notes. We do not send your name or email to Gemini. QuizPup does not train AI models on your content. {% if ai_free_tier %}On our current Google plan, Google may use submitted content to improve its products and people may review it, so please do not upload personal information.{% endif %}</p>
+    <h2 class="text-xl">Who processes your data</h2>
+    <p class="text-sm leading-relaxed">See the <a href="{{ url_for('privacy.subprocessors') }}" class="text-plum font-semibold underline underline-offset-4">list of services</a> that process data for us.</p>
+    <h2 class="text-xl">Cookies</h2>
+    <p class="text-sm leading-relaxed">We use only the cookies needed to keep you signed in and to protect forms. We use no advertising or analytics cookies.</p>
+    <h2 class="text-xl">How long we keep data</h2>
+    <p class="text-sm leading-relaxed">Until you delete it or your account. Unverified sign-ups are removed after a few days, and accounts with no sign-in for about two years are removed.</p>
+    <h2 class="text-xl">Your rights</h2>
+    <p class="text-sm leading-relaxed">You can correct your details, download your data and delete your account from your Profile page at any time.</p>
+    <h2 class="text-xl">Contact and complaints</h2>
+    <p class="text-sm leading-relaxed">{% if privacy_contact_email %}Write to <a href="mailto:{{ privacy_contact_email }}" class="text-plum font-semibold underline underline-offset-4">{{ privacy_contact_email }}</a>.{% else %}[Privacy contact email and grievance officer details to be added.]{% endif %}</p>
+    {% else %}
+    <h1 class="text-3xl">Terms of Service</h1>
+    <p class="text-sm text-ink-soft">Version {{ terms_version }}</p>
+    <p class="text-sm leading-relaxed">[Terms of Service to be drafted in Workstream 6 and reviewed by a lawyer. Business name, address, governing law and refund terms are pending.]</p>
+    {% endif %}
+    <p class="text-sm"><a href="{{ url_for('privacy.subprocessors') }}" class="text-plum font-semibold underline underline-offset-4">Sub-processors</a></p>
+</div>
+{% endblock %}
