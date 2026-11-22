@@ -9,7 +9,9 @@
     <h1 class="text-3xl">Privacy Policy</h1>
     <p class="text-sm text-ink-soft">Version {{ privacy_version }}</p>
     <h2 class="text-xl">What we collect</h2>
-    <p class="text-sm leading-relaxed">Your name, username, email address and a hashed password when you sign up. If you sign in with Google or GitHub, we receive your name and verified email from that provider. We also store the quizzes, flashcards and notes you create, your answers and scores, and a record of when you accepted our policies. We do not ask for your phone number.</p>
+    <p class="text-sm leading-relaxed">Your name, username, email address and a hashed password when you sign up. If you sign in with Google or GitHub, we receive your name and verified email from that provider. We also store the quizzes, flashcards and notes you create, your answers and scores, and a record of when you accepted our policies. We do not ask for your phone number. We also record whether you are under 18 and, if you are, your parent or guardian's email address and their confirmation.</p>
+    <h2 class="text-xl">Children under 18</h2>
+    <p class="text-sm leading-relaxed">If you are under 18, a parent or guardian must confirm before you can use QuizPup. We email them a link, and we keep a record of their confirmation (date, policy version and email address) for as long as the account exists. We do not show advertising to under-18 accounts and we do not turn on optional analytics for them. A parent or guardian can withdraw consent or ask us to delete the account and its data at any time using the link in the confirmation email{% if privacy_contact_email %}, or by writing to {{ privacy_contact_email }}{% endif %}. If a parent or guardian never confirms, we delete the account after {{ parent_pending_days }} days.</p>
     <h2 class="text-xl">How AI is used</h2>
     <p class="text-sm leading-relaxed">Topics you enter and files you upload are sent to Google's Gemini API to generate quizzes, flashcards and notes. We do not send your name or email to Gemini. QuizPup does not train AI models on your content. {% if ai_free_tier %}On our current Google plan, Google may use submitted content to improve its products and people may review it, so please do not upload personal information.{% endif %}</p>
     <h2 class="text-xl">Who processes your data</h2>
@@ -19,7 +21,7 @@
     <h2 class="text-xl">How long we keep data</h2>
     <p class="text-sm leading-relaxed">Until you delete it or your account. Unverified sign-ups are removed after a few days, and accounts with no sign-in for about two years are removed.</p>
     <h2 class="text-xl">Your rights</h2>
-    <p class="text-sm leading-relaxed">You can correct your details, download your data and delete your account from your Profile page at any time.</p>
+    <p class="text-sm leading-relaxed">You can correct your details, download your data and delete your account from your Profile page at any time. For an account of someone under 18, the parent or guardian can also withdraw consent or request deletion.</p>
     <h2 class="text-xl">Contact and complaints</h2>
     <p class="text-sm leading-relaxed">{% if privacy_contact_email %}Write to <a href="mailto:{{ privacy_contact_email }}" class="text-plum font-semibold underline underline-offset-4">{{ privacy_contact_email }}</a>.{% else %}[Privacy contact email and grievance officer details to be added.]{% endif %}</p>
     {% else %}
