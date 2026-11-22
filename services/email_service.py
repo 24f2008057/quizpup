@@ -72,3 +72,17 @@ def send_parent_consent_email(parent_email, child_first_name, link):
         f"<p><a href=\"{safe_link}\">Review and confirm</a></p>"
         f"<p>This link expires in 7 days. If you do not know this person or do not agree, ignore this email and the account will stay locked.</p>"
     )
+
+
+def send_parent_confirmed_email(parent_email, child_first_name, manage_link):
+    name = html.escape(child_first_name or "Your child")
+    safe_link = html.escape(manage_link, quote=True)
+    return send_email(
+        parent_email,
+        "You confirmed your child's QuizPup account",
+        f"<p>Hello,</p>"
+        f"<p>Thank you. {name}'s QuizPup account is now confirmed.</p>"
+        f"<p>You can withdraw your consent or ask us to delete the account and its data at any time here:</p>"
+        f"<p><a href=\"{safe_link}\">Manage consent</a></p>"
+        f"<p>Keep this email. The link works for one year.</p>"
+    )
