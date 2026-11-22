@@ -50,6 +50,8 @@ class Config:
     TERMS_VERSION = os.environ.get('TERMS_VERSION', '2026-11-draft-1')
     PRIVACY_VERSION = os.environ.get('PRIVACY_VERSION', '2026-11-draft-1')
     PARENT_CONSENT_MAX_AGE_SECONDS = int(os.environ.get('PARENT_CONSENT_MAX_AGE_SECONDS', str(7 * 24 * 3600)))
+    PARENT_MANAGE_MAX_AGE_SECONDS = int(os.environ.get('PARENT_MANAGE_MAX_AGE_SECONDS', str(365 * 24 * 3600)))
+    PARENT_PENDING_ACCOUNT_DAYS = int(os.environ.get('PARENT_PENDING_ACCOUNT_DAYS', '14'))
     UNVERIFIED_ACCOUNT_DAYS = int(os.environ.get('UNVERIFIED_ACCOUNT_DAYS', '7'))
     INACTIVE_ACCOUNT_DAYS = int(os.environ.get('INACTIVE_ACCOUNT_DAYS', '730'))
     GEMINI_PAID_TIER = os.environ.get('GEMINI_PAID_TIER', 'false').lower() == 'true'
