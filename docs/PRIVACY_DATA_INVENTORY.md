@@ -1,4 +1,3 @@
-
 # QuizPup Data Inventory and Privacy Review
 
 Status: working document, not legal advice. A lawyer must review it before it is relied on. Last reviewed during Workstream 5 (November 2026).
@@ -14,7 +13,9 @@ Status: working document, not legal advice. A lawyer must review it before it is
 | One-time codes and attempt counters | `user` | Email verification, password reset, email change | Generated | Cleared when expired by `flask purge-data` | Supabase |
 | Sign-in provider and Supabase user id | `user` | Link Google/GitHub identity | Supabase Auth | Until deletion | Supabase |
 | Account created time, last sign-in time | `user` | Retention enforcement | Generated | Until deletion | Supabase |
-| Consent records (type, granted, policy version, time, source) | `consent_record` | Proof of acceptance | Generated at sign-up or re-acceptance | Deleted with the account | Supabase |
+| Age group (adult or minor) | `user.age_group` | Decide whether parental confirmation is needed | You | Until account deletion | Supabase |
+| Parent or guardian email (under-18 users only) | `user.parent_email` | Ask the parent to confirm, and to let them withdraw consent | The student | Until account deletion; accounts never confirmed by a parent are removed after 14 days (`PARENT_PENDING_ACCOUNT_DAYS`) | Supabase, Brevo (sending the confirmation email) |
+| Consent records (type, granted, policy version, time, source, parent email for parental records) | `consent_record` | Proof of acceptance, parental confirmation and withdrawal | Generated at sign-up, re-acceptance, or when the parent confirms or withdraws | Deleted with the account | Supabase |
 | Quiz sessions, questions, your answers, scores, recommendations | `quiz_session`, `quiz_question` | The product | You and Gemini output | Until you delete them or the account | Supabase, Google (topic and source text go to Gemini) |
 | Flashcard decks | `flashcard_deck` | The product | You and Gemini output | Same | Supabase, Google |
 | Notes: extracted text, summary, generated PDF | `super_note` | The product | Your uploads and Gemini output | Same | Supabase, Google |
@@ -30,7 +31,7 @@ Not collected: phone numbers (from now on), precise location, device identifiers
 | Recipient | What | When |
 |---|---|---|
 | Google Gemini API | Topic text, text from uploaded PDFs, uploaded images. No name, email or user id (checked in `services/gemini_service.py` and `supernotes_service.py`) | Every quiz, flashcard or notes generation |
-| Brevo | Recipient email address and the code | Verification, password reset, email change |
+| Brevo | Recipient email address and the code or link; the student's first name in parent emails | Verification, password reset, email change, parent confirmation |
 | Supabase Auth | Email and profile from Google or GitHub, on OAuth sign-in | OAuth sign-in only |
 | Render | All traffic and stored uploads, as host | Always |
 
@@ -72,9 +73,11 @@ Consent records (item 19): `consent_record` stores type, granted, policy version
 Form consent audit (item 36):
 | Form | Consent needed | Status |
 |---|---|---|
-| Register | Terms, Privacy, 18+ (separate, unticked, server-checked) | Done |
+| Register | Terms, Privacy (unticked, server-checked); age question, and parent email if under 18 | Done |
 | OAuth finish-setup | Same | Done |
-| Accept-terms page (existing users) | Same | Done |
+| Accept-terms page (existing users) | Same; age question only if not yet answered | Done |
+| Parent confirmation page | Adult-guardian declaration and Terms and Privacy for the child (both unticked, server-checked) | Done |
+| Parent manage page | Withdraw consent; delete account (needs a ticked box) | Done |
 | Login, forgot password, profile edit | None | n/a |
 | Marketing email | Separate opt-in | Does not exist yet, Workstream 8 |
 
@@ -87,8 +90,27 @@ To remove phone numbers already stored, after confirming you do not need them:
 
 - QuizPup does not train models on user content, and no code does.
 - Gemini free tier: Google's Gemini API terms say content submitted to unpaid services may be used to improve Google's products and may be read by human reviewers, and say not to submit personal information. This cannot be switched off while the app uses unpaid quota. The app now shows a notice at both upload points and the privacy page says so. Paid-tier terms say Google does not use prompts or responses to improve its products. Set `GEMINI_PAID_TIER=true` on Render once billing is on, and the notices switch to the paid wording.
-- The same Gemini terms say apps must not be directed at, or likely to be accessed by, people under 18. QuizPup is exam preparation and students under 18 are a likely audience. Sign-up now asks for an 18+ confirmation, but this is a business and legal decision that needs a lawyer's advice before launch.
+- The same Gemini terms say apps must not be directed at, or likely to be accessed by, people under 18. QuizPup is exam preparation and students under 18 are a likely audience. Sign-up now asks whether the user is under 18 and requires parental confirmation for minors, but this does not change Google's own terms. Whether under-18 students may use the free tier, or any tier, is a business and legal decision that needs a lawyer's advice before launch. Check the paid-tier terms for the same restriction.
 
 ## 8. India's DPDP Act, 2023
 
-The Act's main duties (notice and consent, children's data and verifiable parental consent, retention and erasure, breach notification) start on 12 May 2027 under the 2025 Rules; consent-manager rules start 12 November 2026. QuizPup's notice, consent records, erasure and export are built toward that date. Two gaps remain: a breach-response procedure (Workstream 1 follow-up) and handling of users under 18, which needs a decision. A grievance contact must be published; set `PRIVACY_CONTACT_EMAIL`.
+The Act's main duties (notice and consent, children's data and verifiable parental consent, retention and erasure, breach notification) start on 12 May 2027 under the 2025 Rules; consent-manager rules start 12 November 2026. QuizPup's notice, consent records, erasure and export are built toward that date. Handling of users under 18 is built (section 9) and needs a lawyer to confirm it meets the "verifiable" parental consent standard. One gap remains: a breach-response procedure (Workstream 1 follow-up). A grievance contact must be published; set `PRIVACY_CONTACT_EMAIL`.
+
+## 9. Children (under 18)
+
+Flow:
+1. Sign-up, Google sign-up and the accept-terms page ask whether the user is 18 or older. Under 18 requires a parent or guardian email that differs from the student's.
+2. The parent receives a signed link, valid 7 days and tied to that email. On the confirmation page they declare they are an adult parent or guardian and accept the Terms and Privacy Policy for the child. This is stored as a `parental` consent record with time, terms version and parent email.
+3. Until then the student sees only a "waiting for your parent" page, and API calls return 403 `parental_consent_required`.
+4. After confirming, the parent receives an email with a management link valid one year. From it they can withdraw consent (the student is locked again) or delete the account and all data.
+5. Changing the parent email, or bumping `TERMS_VERSION`, requires a new confirmation.
+
+Restrictions for under-18 accounts:
+- No optional analytics. The page is marked `data-minor`, `consent.js` refuses every optional category, and the banner has no "Allow optional" button. No advertising or analytics exists in the app today.
+- Accounts that a parent never confirmed are removed by `flask purge-data` after `PARENT_PENDING_ACCOUNT_DAYS` (default 14). Accounts whose parent withdrew consent are kept so the parent can confirm again, or deleted by the parent.
+
+Open points for a lawyer:
+- Whether email-link confirmation plus a declaration is enough for verifiable parental consent under the 2025 Rules. A payment by the parent is a stronger signal and is planned for Workstream 7.
+- Whether the quiz scores and recommendations stored for students count as monitoring of a child's behaviour.
+- Gemini terms for under-18 users (section 7).
+- Parent-email sending depends on `BREVO_API_KEY` and `BREVO_SENDER_EMAIL` being set; it has not been tested against Brevo.
