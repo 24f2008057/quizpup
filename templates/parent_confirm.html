@@ -9,7 +9,11 @@
             <p class="text-sm text-ink-soft">The link is invalid, has expired, or the parent email was changed. Ask your child to sign in to QuizPup and choose to send the email again.</p>
             {% elif state == 'done' %}
             <h1 class="text-2xl">Thank you</h1>
-            <p class="text-sm text-ink-soft">{{ child_name }}'s QuizPup account is now confirmed. You can close this page.</p>
+            <p class="text-sm text-ink-soft">{{ child_name }}'s QuizPup account is now confirmed.</p>
+            {% if manage_url %}
+            <p class="text-sm text-ink-soft">You can withdraw consent or ask us to delete the account at any time. We also emailed you this link.</p>
+            <p><a href="{{ manage_url }}" class="text-plum font-semibold underline underline-offset-4">Manage consent</a></p>
+            {% endif %}
             {% else %}
             <h1 class="text-2xl">Confirm {{ child_name }}'s account</h1>
             <p class="text-sm text-ink-soft">{{ child_name }} signed up for QuizPup, an exam preparation app, and is under 18. A parent or guardian must confirm before they can use it.</p>
