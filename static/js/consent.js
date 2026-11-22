@@ -22,7 +22,12 @@
         return record;
     }
 
+    function isMinor() {
+        return document.documentElement.getAttribute('data-minor') === '1';
+    }
+
     function allowed(name) {
+        if (isMinor()) return false;
         var stored = read();
         return !!(stored && stored[name] === true);
     }
@@ -62,7 +67,7 @@
 
     function choose(grantOptional) {
         var choices = {};
-        CATEGORIES.forEach(function (name) { choices[name] = grantOptional; });
+        CATEGORIES.forEach(function (name) { choices[name] = grantOptional && !isMinor(); });
         write(choices);
         hide();
         activate();
