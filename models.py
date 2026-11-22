@@ -62,6 +62,8 @@ class QuizQuestion(db.Model):
     explanation = db.Column(db.Text, nullable=True)
     user_answer = db.Column(db.Integer, nullable=True)
     hint_requested = db.Column(db.Boolean, default=False)
+    visited = db.Column(db.Boolean, default=False, nullable=False, server_default=db.false())
+    marked = db.Column(db.Boolean, default=False, nullable=False, server_default=db.false())
 
 class FlashcardDeck(db.Model):
     id = db.Column(db.Integer, primary_key=True)
