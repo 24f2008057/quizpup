@@ -9,7 +9,9 @@
         border: 1px solid var(--color-line);
     }
 </style>
-<div id="quiz-workspace" class="p-5 space-y-6">
+<div id="quiz-workspace" class="p-5">
+<div class="quiz-layout">
+<div class="space-y-6 min-w-0">
     <div class="quiz-toolbar p-4 rounded-panel elevate-sm space-y-3">
         <div class="flex justify-between items-center">
             <div>
@@ -41,14 +43,32 @@
 
     <div class="flex justify-between items-center flex-wrap gap-2">
         <button id="prevBtn" onclick="moveSlide(-1)" class="px-4 py-2 bg-blush text-plum border border-line rounded-control text-sm font-semibold hover:bg-blush-deep disabled:opacity-50 cursor-pointer">Previous</button>
-        <div class="flex gap-2">
+        <div class="flex gap-2 flex-wrap justify-center basis-full order-last sm:basis-auto sm:order-none">
             <button id="clearBtn" onclick="clearCurrentChoice()" class="px-4 py-2 border border-line text-plum rounded-control text-sm font-medium hover:bg-blush/40 cursor-pointer">Clear Answer</button>
+            <button id="markBtn" type="button" aria-pressed="false" onclick="toggleMark()" class="qp-mark-btn px-4 py-2 border border-line text-plum rounded-control text-sm font-medium hover:bg-blush/40 cursor-pointer">Mark for later</button>
+            <button id="openPaletteBtn" type="button" onclick="openPalette()" class="qp-open-btn items-center px-4 py-2 border border-line text-plum rounded-control text-sm font-medium hover:bg-blush/40 cursor-pointer">Questions</button>
             <button id="hintTriggerBtn" onclick="requestHintPayload()" class="btn-accent px-4 py-2 rounded-control text-sm font-semibold elevate-sm hidden cursor-pointer">Hint</button>
         </div>
         <button id="nextBtn" onclick="moveSlide(1)" class="btn-primary px-4 py-2 rounded-control text-sm font-semibold elevate-sm cursor-pointer">Next</button>
     </div>
 </div>
 
+<aside class="quiz-aside" aria-labelledby="qp-title">
+    <h2 id="qp-title" class="text-lg font-serif font-bold text-plum mb-3">Questions</h2>
+    <nav aria-label="Question palette" data-palette-mount></nav>
+</aside>
+</div>
+</div>
+
+<dialog id="palette-sheet" class="qp-sheet" aria-labelledby="qp-sheet-title">
+    <div class="flex items-center justify-between mb-3">
+        <h2 id="qp-sheet-title" class="text-lg font-serif font-bold text-plum">Questions</h2>
+        <button type="button" onclick="closePalette()" class="px-4 min-h-11 border border-line text-plum rounded-control text-sm font-semibold cursor-pointer">Close</button>
+    </div>
+    <nav aria-label="Question palette" data-palette-mount></nav>
+</dialog>
+
+<div class="mx-auto max-w-[44rem]">
 <div id="analytics-report-card" class="hidden space-y-6 bg-surface border border-line p-6 rounded-card elevate-lg m-5">
     <h1 id="results-heading" tabindex="-1" class="text-2xl font-serif font-bold text-plum reveal-in">Quiz Summary Report</h1>
     <p class="text-lg font-semibold text-plum reveal-in">Total Score: <span id="score-data-val" class="font-black text-rose-strong text-2xl tabular-nums tracking-tight"></span></p>
@@ -63,6 +83,7 @@
         <a href="/home" class="btn-primary flex-1 font-semibold py-3 px-4 rounded-panel text-sm elevate-sm cursor-pointer text-center flex items-center justify-center gap-2">Go to Home</a>
     </div>
 </div>
+</div>
 
 
 <script nonce="{{ csp_nonce() }}">
@@ -73,6 +94,8 @@ let secondsLeft = 0;
 let clockLoop;
 let reviewMode = false;
 let globalExplanations = {};
+let visitedIds = new Set();
+let markedIds = new Set();
 
 function revealResultsCard() {
     const card = document.getElementById('analytics-report-card');
@@ -95,6 +118,8 @@ async function startEngine() {
     const data = await res.json();
     questionDeck = data.questions;
     savedAnswers = data.saved_answers || {};
+    visitedIds = new Set(data.visited_ids || []);
+    markedIds = new Set(data.marked_ids || []);
     
     if (data.is_completed) {
         reviewMode = true;
@@ -119,7 +144,9 @@ async function saveProgress() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 answers: savedAnswers,
-                seconds_remaining: secondsLeft
+                seconds_remaining: secondsLeft,
+                visited: Array.from(visitedIds),
+                marked: Array.from(markedIds)
             })
         });
     } catch(e) {
@@ -131,7 +158,7 @@ window.addEventListener('beforeunload', () => {
     if (!reviewMode && questionDeck.length) {
         const form = new FormData();
         form.append('csrf_token', document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '');
-        form.append('payload', JSON.stringify({ answers: savedAnswers, seconds_remaining: secondsLeft }));
+        form.append('payload', JSON.stringify({ answers: savedAnswers, seconds_remaining: secondsLeft, visited: Array.from(visitedIds), marked: Array.from(markedIds) }));
         navigator.sendBeacon('/api/quiz/{{ session.id }}/save-progress', form);
     }
 });
@@ -147,6 +174,7 @@ function configureHintsIndicator(mode, total) {
 function showQuestion() {
     if(!questionDeck.length) return;
     const item = questionDeck[cursor];
+    if (!reviewMode) visitedIds.add(item.id);
     
     document.getElementById('question-header').innerText = `Question ${cursor + 1} of ${questionDeck.length}`;
     document.getElementById('question-body-text').innerText = item.question;
@@ -207,6 +235,11 @@ function showQuestion() {
         const quitBtn = document.getElementById('quitExamBtn');
         if (quitBtn) quitBtn.innerText = 'Exit Review';
     }
+
+    const markBtn = document.getElementById('markBtn');
+    markBtn.style.display = reviewMode ? 'none' : '';
+    markBtn.setAttribute('aria-pressed', String(markedIds.has(item.id)));
+    renderPalette();
 
     const expPanel = document.getElementById('feedback-explanation-panel');
     if(reviewMode && globalExplanations[item.id]) {
@@ -307,7 +340,12 @@ async function completeQuizSession() {
         body: JSON.stringify({ answers: savedAnswers })
     });
     const data = await res.json();
-    globalExplanations = data.explanations;
+    try {
+        const detail = await fetch('/api/quiz/{{ session.id }}/questions');
+        globalExplanations = (await detail.json()).explanations || {};
+    } catch (e) {
+        globalExplanations = {};
+    }
     
     document.getElementById('score-data-val').innerText = `${data.score} / ${data.total}`;
     document.getElementById('recommendation-box-string').innerText = data.recommendation;
@@ -322,6 +360,108 @@ function revealExplanationsWorkflow() {
     showQuestion();
 }
 
-window.onload = startEngine;
+function paletteState(q) {
+    const answered = savedAnswers[q.id] !== undefined && savedAnswers[q.id] !== null;
+    if (reviewMode) {
+        if (!answered) return { state: 'unvisited', label: 'not answered' };
+        const correct = globalExplanations[q.id] ? globalExplanations[q.id].correct : null;
+        return String(savedAnswers[q.id]) === String(correct) ? { state: 'correct', label: 'correct' } : { state: 'wrong', label: 'wrong' };
+    }
+    if (markedIds.has(q.id)) return { state: 'marked', label: answered ? 'answered and marked for later' : 'marked for later', badge: answered };
+    if (answered) return { state: 'answered', label: 'answered' };
+    if (visitedIds.has(q.id)) return { state: 'visited', label: 'not answered' };
+    return { state: 'unvisited', label: 'not visited' };
+}
+
+function renderPalette() {
+    if (!questionDeck.length) return;
+    const counts = { answered: 0, visited: 0, unvisited: 0, marked: 0, correct: 0, wrong: 0 };
+    const dots = questionDeck.map((q, i) => {
+        const s = paletteState(q);
+        counts[s.state] += 1;
+        const current = i === cursor;
+        return `<li><button type="button" class="qp-dot" data-i="${i}" data-state="${s.state}"${s.badge ? ' data-badge="answered"' : ''}${current ? ' aria-current="true"' : ''} tabindex="${current ? 0 : -1}" aria-label="Question ${i + 1}: ${s.label}${current ? ', current' : ''}">${i + 1}</button></li>`;
+    }).join('');
+    const item = (state, text, n) => `<li><span class="qp-swatch" data-state="${state}" aria-hidden="true"></span>${text} (${n})</li>`;
+    const legend = reviewMode
+        ? item('correct', 'Correct', counts.correct) + item('wrong', 'Wrong', counts.wrong) + item('unvisited', 'Not answered', counts.unvisited)
+        : item('answered', 'Answered', counts.answered + (counts.marked ? questionDeck.filter(q => markedIds.has(q.id) && savedAnswers[q.id] != null).length : 0)) + item('visited', 'Not answered', counts.visited) + item('unvisited', 'Not visited', counts.unvisited) + item('marked', 'Marked for later', counts.marked);
+    document.querySelectorAll('[data-palette-mount]').forEach(mount => {
+        mount.innerHTML = `<ul class="qp-legend" role="list">${legend}</ul><ul class="qp-grid" role="list">${dots}</ul>`;
+    });
+    const aside = document.querySelector('.quiz-aside');
+    const cur = aside ? aside.querySelector('[aria-current="true"]') : null;
+    if (cur && aside.offsetParent !== null) {
+        const r = cur.getBoundingClientRect();
+        const a = aside.getBoundingClientRect();
+        if (r.top < a.top || r.bottom > a.bottom) aside.scrollTop += r.top - a.top - a.height / 2;
+    }
+}
+
+function jumpTo(i) {
+    if (i < 0 || i >= questionDeck.length) return;
+    cursor = i;
+    showQuestion();
+    const sheet = document.getElementById('palette-sheet');
+    if (sheet.open) sheet.close();
+    const body = document.getElementById('question-body-text');
+    body.setAttribute('tabindex', '-1');
+    body.focus({ preventScroll: true });
+    body.scrollIntoView({ block: 'nearest' });
+}
+
+function toggleMark() {
+    if (reviewMode) return;
+    const id = questionDeck[cursor].id;
+    if (markedIds.has(id)) markedIds.delete(id); else markedIds.add(id);
+    const on = markedIds.has(id);
+    document.getElementById('markBtn').setAttribute('aria-pressed', String(on));
+    document.getElementById('quiz-live').innerText = `Question ${cursor + 1} ${on ? 'marked for later' : 'unmarked'}`;
+    renderPalette();
+    saveProgress();
+}
+
+function openPalette() {
+    const sheet = document.getElementById('palette-sheet');
+    renderPalette();
+    sheet.showModal();
+    const cur = sheet.querySelector('[aria-current="true"]');
+    if (cur) cur.scrollIntoView({ block: 'center' });
+}
+
+function closePalette() {
+    document.getElementById('palette-sheet').close();
+}
+
+function initPalette() {
+    document.querySelectorAll('[data-palette-mount]').forEach(mount => {
+        mount.addEventListener('click', e => {
+            const dot = e.target.closest('.qp-dot');
+            if (dot) jumpTo(Number(dot.dataset.i));
+        });
+        mount.addEventListener('keydown', e => {
+            const dot = e.target.closest('.qp-dot');
+            if (!dot) return;
+            const dots = Array.from(mount.querySelectorAll('.qp-dot'));
+            const index = dots.indexOf(dot);
+            const cols = dots.filter(d => d.offsetTop === dots[0].offsetTop).length || 1;
+            const moves = { ArrowRight: 1, ArrowLeft: -1, ArrowDown: cols, ArrowUp: -cols };
+            let target = null;
+            if (e.key in moves) target = dots[index + moves[e.key]];
+            else if (e.key === 'Home') target = dots[0];
+            else if (e.key === 'End') target = dots[dots.length - 1];
+            else return;
+            e.preventDefault();
+            if (!target) return;
+            dot.tabIndex = -1;
+            target.tabIndex = 0;
+            target.focus();
+        });
+    });
+    const sheet = document.getElementById('palette-sheet');
+    sheet.addEventListener('click', e => { if (e.target === sheet) sheet.close(); });
+}
+
+window.onload = () => { initPalette(); startEngine(); };
 </script>
 {% endblock %}
