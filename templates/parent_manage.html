@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}Manage consent — QuizPup{% endblock %}
+{% block content %}
+<div class="px-5 py-8 sm:py-14">
+    <div class="page-narrow">
+        <div class="bg-surface border border-line p-6 sm:p-8 rounded-card elevate-sm space-y-5">
+            {% if state == 'invalid' %}
+            <h1 class="text-2xl">This link cannot be used</h1>
+            <p class="text-sm text-ink-soft">The link is invalid, has expired, or the parent email was changed.{% if privacy_contact_email %} Write to <a href="mailto:{{ privacy_contact_email }}" class="text-plum font-semibold underline underline-offset-4">{{ privacy_contact_email }}</a> for help.{% endif %}</p>
+            {% elif state == 'deleted' %}
+            <h1 class="text-2xl">Account deleted</h1>
+            <p class="text-sm text-ink-soft">{{ child_name }}'s QuizPup account and data have been deleted.</p>
+            {% else %}
+            <h1 class="text-2xl">Manage consent for {{ child_name }}</h1>
+            <p class="text-sm text-ink-soft" id="consent-status">
+                {% if status == 'confirmed' %}Status: you have confirmed this account.
+                {% elif status == 'withdrawn' %}Status: you have withdrawn consent. {{ child_name }} cannot use QuizPup until a parent or guardian confirms again.
+                {% else %}Status: this account has not been confirmed yet.{% endif %}
+            </p>
+            {% with messages = get_flashed_messages() %}
+            {% for message in messages %}
+            <div role="alert" class="text-sm p-3 rounded-control font-medium bg-danger-bg border border-danger-line text-danger">{{ message }}</div>
+            {% endfor %}
+            {% endwith %}
+            {% if status == 'confirmed' %}
+            <form method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="action" value="withdraw">
+                <button type="submit" class="btn-secondary w-full font-semibold min-h-12 rounded-control text-base cursor-pointer">Withdraw consent</button>
+            </form>
+            {% endif %}
+            <form method="POST" class="space-y-3">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="action" value="delete">
+                <div class="flex items-start gap-3">
+                    <input id="confirm_delete" name="confirm_delete" type="checkbox" required class="mt-1 h-5 w-5 shrink-0 accent-plum">
+                    <label for="confirm_delete" class="text-sm text-ink leading-snug">Delete {{ child_name }}'s account and all their data. This cannot be undone.</label>
+                </div>
+                <button type="submit" class="btn-secondary w-full font-semibold min-h-12 rounded-control text-base cursor-pointer">Delete account and data</button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
