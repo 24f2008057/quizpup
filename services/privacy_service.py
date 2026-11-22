@@ -48,18 +48,38 @@ def has_current_consent(user):
 def has_parent_consent(user):
     if user.age_group != "minor":
         return True
-    latest = (
-        ConsentRecord.query
-        .filter_by(user_id=user.id, consent_type="parental")
-        .order_by(ConsentRecord.id.desc())
-        .first()
-    )
+    latest = _latest_parental_record(user)
     return bool(
         latest
         and latest.granted
         and latest.parent_email == user.parent_email
         and latest.policy_version == current_versions()["terms"]
     )
+
+
+def _latest_parental_record(user):
+    return (
+        ConsentRecord.query
+        .filter_by(user_id=user.id, consent_type="parental")
+        .order_by(ConsentRecord.id.desc())
+        .first()
+    )
+
+
+def parent_consent_withdrawn(user):
+    latest = _latest_parental_record(user)
+    return bool(latest and not latest.granted and latest.parent_email == user.parent_email)
+
+
+def record_parental_withdrawal(user, source="parent_withdrawal"):
+    db.session.add(ConsentRecord(
+        user_id=user.id,
+        consent_type="parental",
+        granted=False,
+        policy_version=current_versions()["terms"],
+        source=source,
+        parent_email=user.parent_email,
+    ))
 
 
 def record_parental_consent(user, source="parent_link"):
@@ -214,6 +234,20 @@ def purge_expired(now=None):
         ok, _ = delete_user_account(user)
         removed_unverified += 1 if ok else 0
 
+    pending_cutoff = now - timedelta(days=cfg["PARENT_PENDING_ACCOUNT_DAYS"])
+    never_confirmed = [
+        user for user in User.query.filter(
+            User.age_group == "minor",
+            User.created_at.isnot(None),
+            User.created_at < pending_cutoff,
+        ).all()
+        if ConsentRecord.query.filter_by(user_id=user.id, consent_type="parental").first() is None
+    ]
+    removed_unconfirmed = 0
+    for user in never_confirmed:
+        ok, _ = delete_user_account(user)
+        removed_unconfirmed += 1 if ok else 0
+
     removed_inactive = 0
     for user in inactive:
         ok, _ = delete_user_account(user)
@@ -239,5 +273,6 @@ def purge_expired(now=None):
     return {
         "unverified_accounts_removed": removed_unverified,
         "inactive_accounts_removed": removed_inactive,
+        "unconfirmed_minor_accounts_removed": removed_unconfirmed,
         "expired_codes_cleared": len(expired_otps) + len(email_otps),
     }
