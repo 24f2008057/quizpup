@@ -318,6 +318,8 @@ def get_quiz_questions(session_id):
         "recommendation": session_instance.recommendation,
         "questions": questions,
         "saved_answers": saved_answers_map,
+        "visited_ids": [q.id for q in session_instance.questions if q.visited],
+        "marked_ids": [q.id for q in session_instance.questions if q.marked],
         "explanations": explanations_map
     })
 
@@ -352,6 +354,18 @@ def submit_quiz(session_id):
     return jsonify({"score": score, "total": session_instance.total_questions, "recommendation": session_instance.recommendation})
 
 
+def _id_set(values):
+    if not isinstance(values, list):
+        return set()
+    cleaned = set()
+    for value in values:
+        try:
+            cleaned.add(int(value))
+        except (TypeError, ValueError):
+            continue
+    return cleaned
+
+
 @quiz_bp.route('/api/quiz/<int:session_id>/save-progress', methods=['POST'])
 @login_required
 def save_quiz_progress(session_id):
@@ -381,6 +395,9 @@ def save_quiz_progress(session_id):
         except (TypeError, ValueError):
             pass
 
+    visited_ids = _id_set(data.get('visited'))
+    marked_ids = _id_set(data.get('marked')) if 'marked' in data else None
+
     for q in session_instance.questions:
         if str(q.id) in answers:
             ans_val = answers[str(q.id)]
@@ -388,6 +405,10 @@ def save_quiz_progress(session_id):
                 q.user_answer = int(ans_val) if ans_val is not None else None
             except (TypeError, ValueError):
                 q.user_answer = None
+        if q.id in visited_ids:
+            q.visited = True
+        if marked_ids is not None:
+            q.marked = q.id in marked_ids
 
     db.session.commit()
     return jsonify({"success": True})
