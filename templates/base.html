@@ -15,7 +15,7 @@
 } %}
 {% set page_title = title_map.get(request.endpoint) %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en"{% if is_minor_user %} data-minor="1"{% endif %}>
 
 <head>
     <meta charset="UTF-8">
