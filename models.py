@@ -93,3 +93,52 @@ class ConsentRecord(db.Model):
     source = db.Column(db.String(40), nullable=False)
     parent_email = db.Column(db.String(150), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+
+class Subscription(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, unique=True)
+    plan = db.Column(db.String(10), nullable=False)
+    billing = db.Column(db.String(12), nullable=False)
+    status = db.Column(db.String(20), nullable=False, default='created')
+    provider_subscription_id = db.Column(db.String(64), unique=True, nullable=True)
+    current_period_start = db.Column(db.DateTime, nullable=True)
+    current_period_end = db.Column(db.DateTime, nullable=True)
+    cancel_at_period_end = db.Column(db.Boolean, nullable=False, default=False, server_default=db.false())
+    reminder_sent_for = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class Payment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
+    provider_payment_id = db.Column(db.String(64), unique=True, nullable=True)
+    provider_order_id = db.Column(db.String(64), unique=True, nullable=True)
+    provider_subscription_id = db.Column(db.String(64), nullable=True)
+    plan = db.Column(db.String(10), nullable=False)
+    billing = db.Column(db.String(12), nullable=False)
+    months = db.Column(db.Integer, nullable=False, default=1)
+    amount_paise = db.Column(db.Integer, nullable=False)
+    currency = db.Column(db.String(3), nullable=False, default='INR')
+    status = db.Column(db.String(20), nullable=False, default='created')
+    refunded_paise = db.Column(db.Integer, nullable=False, default=0)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class PaymentEvent(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    event_id = db.Column(db.String(80), unique=True, nullable=False)
+    event_type = db.Column(db.String(60), nullable=False)
+    received_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class CreditLedger(db.Model):
+    __table_args__ = (db.UniqueConstraint('user_id', 'reason', 'period_key', name='uq_credit_period'),)
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    delta = db.Column(db.Integer, nullable=False)
+    reason = db.Column(db.String(20), nullable=False)
+    ref = db.Column(db.String(64), nullable=True, index=True)
+    period_key = db.Column(db.String(64), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
