@@ -15,6 +15,7 @@ from google.genai import types
 from extensions import db, limiter
 from models import QuizSession, QuizQuestion
 from services.gemini_service import call_gemini, quiz_task, GeminiCooldown, MAX_PARALLEL
+from services import credits, plans
 from services.security_utils import is_allowed_upload_content
 
 from . import quiz_bp
@@ -25,10 +26,50 @@ QUIZ_SOURCE_MAX_PDF_PAGES = 200
 QUIZ_SOURCE_MAX_CHARS = 40000
 
 
+def _quiz_cost_from_form():
+    try:
+        total_q = int(request.form.get('total_questions', 10))
+    except (TypeError, ValueError):
+        return None
+    if total_q < 10 or total_q > 200:
+        return None
+    return plans.quiz_cost(request.form.get('difficulty', 'easy'), total_q)
+
+
+def _credit_error(exc):
+    return jsonify({
+        "success": False,
+        "code": "insufficient_credits",
+        "error": f"This needs {exc.needed} credits and you have {exc.available}. Credits refill on your plan's next reset, or you can upgrade on the Premium page.",
+        "upgrade_url": url_for('dashboard.account'),
+    }), 402
+
+
 @quiz_bp.route('/generate-quiz', methods=['POST'])
 @login_required
 @limiter.limit("20 per hour")
 def generate_quiz():
+    cost = _quiz_cost_from_form()
+    if cost is None:
+        return _generate_quiz_core()
+    ref = f"quiz-{uuid.uuid4().hex}"
+    try:
+        credits.charge(current_user, cost, ref)
+    except credits.InsufficientCredits as exc:
+        return _credit_error(exc)
+    try:
+        result = _generate_quiz_core()
+    except Exception:
+        credits.refund_charge(current_user.id, ref)
+        raise
+    response = result[0] if isinstance(result, tuple) else result
+    status = result[1] if isinstance(result, tuple) else getattr(response, 'status_code', 200)
+    if status >= 400:
+        credits.refund_charge(current_user.id, ref)
+    return result
+
+
+def _generate_quiz_core():
     topic = (request.form.get('topic') or '').strip()
     difficulty = request.form.get('difficulty', 'easy')
     try:
