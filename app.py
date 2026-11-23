@@ -18,6 +18,7 @@ from config import Config, IS_PRODUCTION
 from extensions import db, login_manager, csrf, limiter
 from security_headers import register_security_hooks
 from static_assets import init_static_assets
+from blueprints.billing import billing_bp, register_billing_cli
 from error_handlers import register_error_handlers
 from blueprints.auth import auth_bp
 from blueprints.dashboard import dashboard_bp
@@ -62,6 +63,8 @@ def create_app():
     app.register_blueprint(quiz_bp)
     app.register_blueprint(privacy_bp)
     register_privacy_cli(app)
+    app.register_blueprint(billing_bp)
+    register_billing_cli(app)
 
     @app.route('/healthz')
     @limiter.exempt
