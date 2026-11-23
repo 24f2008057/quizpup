@@ -28,4 +28,5 @@ def study_view():
 @dashboard_bp.route('/account')
 @login_required
 def account():
-    return render_template('dashboard.html', view="account")
+    from blueprints.billing.routes import page_context
+    return render_template('dashboard.html', view="account", **page_context(current_user))
