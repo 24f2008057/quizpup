@@ -35,10 +35,15 @@ def register_security_hooks(app):
             "form-action 'self'; "
             "object-src 'none'"
         )
+        if request.endpoint == 'dashboard.account':
+            csp = csp.replace(f"script-src 'self' 'nonce-{nonce}'", f"script-src 'self' 'nonce-{nonce}' https://checkout.razorpay.com")
+            csp = csp.replace("connect-src 'self'", "connect-src 'self' https://api.razorpay.com")
+            csp = csp.replace("frame-ancestors 'none'", "frame-src https://api.razorpay.com https://checkout.razorpay.com; frame-ancestors 'none'")
+            csp = csp.replace("img-src 'self' data: blob:", "img-src 'self' data: blob: https://*.razorpay.com")
         response.headers['X-Content-Type-Options'] = 'nosniff'
         response.headers['X-Frame-Options'] = 'DENY'
         response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
-        response.headers['Permissions-Policy'] = 'camera=(), microphone=(), geolocation=(), payment=()'
+        response.headers['Permissions-Policy'] = 'camera=(), microphone=(), geolocation=(), payment=(self "https://checkout.razorpay.com" "https://api.razorpay.com")'
         response.headers['Content-Security-Policy'] = csp
         response.headers['Cross-Origin-Opener-Policy'] = 'same-origin'
         if current_user.is_authenticated and not request.path.startswith('/static/'):
