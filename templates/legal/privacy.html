@@ -1,0 +1,96 @@
+{% extends 'legal/_layout.html' %}
+{% from '_legal_macros.html' import ph, todo, link, email %}
+{% block title %}Privacy Policy — QuizPup{% endblock %}
+{% block doc_title %}Privacy Policy{% endblock %}
+{% block doc_version %}Version {{ privacy_version }}.{% endblock %}
+{% block doc_body %}
+<section class="space-y-2">
+    <h2 class="text-xl">Who we are</h2>
+    <p class="text-sm leading-relaxed">QuizPup is run by {{ ph(legal.entity, 'legal name of the operator; no business is registered yet') }}, {{ ph(legal.address, 'registered or postal address') }}. We decide why and how your personal data is used. You can reach us on the {{ link('privacy.contact', 'Contact page') }}.</p>
+</section>
+
+<section class="space-y-2">
+    <h2 class="text-xl">What we collect</h2>
+    <ul class="text-sm leading-relaxed list-disc pl-5 space-y-1">
+        <li>Account details: your username, first and last name, email address and a hashed password. If you sign in with Google or GitHub, we receive your name and verified email from them instead of a password.</li>
+        <li>Your age group (adult or under 18). If you are under 18, we also keep your parent or guardian's email address and a record of their approval.</li>
+        <li>Your study content: topics you enter, quizzes and the answers you give, scores, flashcard decks, and notes (text extracted from files you upload, the summary and the PDF we make).</li>
+        <li>Files you upload (images and PDFs). They are kept only while they are being processed and are deleted afterwards.</li>
+        <li>Records of what you agreed to: which Terms and Privacy Policy version, when, and how.</li>
+        <li>Short-lived codes for email verification, password reset and email change, and the time you created your account and last signed in.</li>
+        <li>Technical logs kept by our host: your user id, the type of event and error messages.</li>
+    </ul>
+    <p class="text-sm leading-relaxed">We do not collect your precise location, device or advertising identifiers, or payment details. We no longer ask for a phone number. {{ todo('if existing phone numbers are still stored, say so here or delete them first') }}</p>
+</section>
+
+<section class="space-y-2">
+    <h2 class="text-xl">Why we use it, and our basis</h2>
+    <ul class="text-sm leading-relaxed list-disc pl-5 space-y-1">
+        <li>To create your account, sign you in and keep it secure.</li>
+        <li>To generate and store the quizzes, flashcards and notes you ask for.</li>
+        <li>To send you emails you need, such as verification and password-reset codes.</li>
+        <li>To keep proof of what you agreed to, and to follow the law.</li>
+    </ul>
+    <p class="text-sm leading-relaxed">{{ todo('lawyer to set the legal basis for each purpose: consent, contract, legitimate use or legal duty, under India\'s DPDP Act and, if you serve people in the EU or UK, the GDPR') }} We do not use your data for advertising and we do not sell it. We do not send marketing email today. If we start, it will need your separate, optional consent.</p>
+</section>
+
+<section class="space-y-2">
+    <h2 class="text-xl">How AI is used</h2>
+    <p class="text-sm leading-relaxed">Topics you type and files you upload are sent to Google's Gemini API to create your quizzes, flashcards and notes. We do not send your name, email or user id with them.</p>
+    {% if ai_free_tier %}
+    <p class="text-sm leading-relaxed">QuizPup currently uses Google's free tier. Under Google's terms for that tier, Google may use content sent to it to improve its products and people may read it. Please do not upload personal information, such as ID documents or other people's details.</p>
+    {% else %}
+    <p class="text-sm leading-relaxed">QuizPup uses Google's paid tier. Under Google's terms for that tier, Google does not use what we send to improve its products. {{ todo('confirm against Google\'s current terms on the day you publish') }}</p>
+    {% endif %}
+    <p class="text-sm leading-relaxed">QuizPup does not train AI models on your content. AI output can be wrong, so check it against your syllabus and books.</p>
+</section>
+
+<section class="space-y-2">
+    <h2 class="text-xl">People under 18</h2>
+    <p class="text-sm leading-relaxed">If you say you are under 18, your account stays locked until your parent or guardian approves it by email. {{ todo('lawyer to confirm this meets DPDP rules on verifiable parental consent and Google\'s Gemini terms on users under 18') }}</p>
+</section>
+
+<section class="space-y-2">
+    <h2 class="text-xl">Who else handles your data</h2>
+    <p class="text-sm leading-relaxed">We use a few providers to run QuizPup: a database and sign-in provider, a host, an AI provider and an email sender. The current list, with what each receives, is on the {{ link('privacy.subprocessors', 'sub-processors page') }}. {{ todo('data-processing agreements signed with each provider; see docs/DPA_AND_SUBPROCESSORS_CHECKLIST.md') }} We may also share data when the law requires it.</p>
+    <p class="text-sm leading-relaxed">Some providers are outside India. {{ todo('list the countries and the safeguards used for transfers, once the Supabase, Render, Google and Brevo regions are confirmed') }}</p>
+</section>
+
+<section class="space-y-2">
+    <h2 class="text-xl">Cookies</h2>
+    <p class="text-sm leading-relaxed">We use only the cookies and browser storage needed to keep you signed in and protect forms, and no advertising or analytics cookies. Details are in the {{ link('privacy.cookies', 'Cookie Policy') }}.</p>
+</section>
+
+<section class="space-y-2">
+    <h2 class="text-xl">How long we keep data</h2>
+    <ul class="text-sm leading-relaxed list-disc pl-5 space-y-1">
+        <li>Your account and study content: until you delete them or your account.</li>
+        <li>Accounts that were never verified: removed after {{ config['UNVERIFIED_ACCOUNT_DAYS'] }} days.</li>
+        <li>Accounts with no sign-in for {{ config['INACTIVE_ACCOUNT_DAYS'] }} days (about two years): removed.</li>
+        <li>Uploaded files: deleted once processing ends.</li>
+        <li>Expired codes: cleared regularly.</li>
+        <li>Logs: for as long as our host keeps them. {{ todo('state the host\'s log retention period') }}</li>
+        <li>Backups: held by our database and hosting providers for a limited time after deletion. {{ todo('state the backup retention period of each provider') }}</li>
+    </ul>
+</section>
+
+<section class="space-y-2">
+    <h2 class="text-xl">Your rights</h2>
+    <p class="text-sm leading-relaxed">From your Profile page you can correct your details, download a copy of your data as a file, and delete your account and everything in it. You can also write to us to ask for access, correction or erasure, to withdraw a consent you gave, or to complain. {{ todo('lawyer to add the exact rights and response times required by the DPDP Act, including nominating another person to act for you, and by the GDPR if it applies') }}</p>
+</section>
+
+<section class="space-y-2">
+    <h2 class="text-xl">Security and breaches</h2>
+    <p class="text-sm leading-relaxed">Passwords are stored as hashes, connections use HTTPS, and access to the database is restricted. No system is perfectly secure. {{ todo('lawyer to confirm the breach-notice wording once a written breach-response procedure exists') }}</p>
+</section>
+
+<section class="space-y-2">
+    <h2 class="text-xl">Changes to this policy</h2>
+    <p class="text-sm leading-relaxed">When we make a material change we will update the version above and ask you to accept it again before you continue.</p>
+</section>
+
+<section class="space-y-2">
+    <h2 class="text-xl">Contact and complaints</h2>
+    <p class="text-sm leading-relaxed">Questions or requests about your data: {% if privacy_contact_email %}{{ email(privacy_contact_email) }}{% else %}{{ todo('privacy contact email') }}{% endif %}. Grievance officer: {{ ph(legal.grievance_name, 'name of grievance officer') }}, {% if legal.grievance_email %}{{ email(legal.grievance_email) }}{% else %}{{ todo('grievance officer email') }}{% endif %}. {{ todo('lawyer to add how and when complaints are answered, and the right to complain to India\'s Data Protection Board when it is operating') }}</p>
+</section>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block content %}
+<article class="py-6 space-y-5 legal-doc">
+    {% if not legal.reviewed %}
+    <div class="bg-warning-bg border border-line rounded-control p-4 text-sm text-warning font-medium" role="note">
+        Draft. This page has not been reviewed by a lawyer. Items in <mark class="bg-surface text-warning font-semibold px-1 rounded-control">[brackets]</mark> are still to be filled in or decided.
+    </div>
+    {% endif %}
+    <header class="space-y-1">
+        <h1 class="text-3xl">{% block doc_title %}{% endblock %}</h1>
+        <p class="text-sm text-ink-soft">
+            {% block doc_version %}{% endblock %}
+            {% if legal.effective %}Effective {{ legal.effective }}.{% else %}Effective date: <mark class="bg-warning-bg text-warning font-semibold px-1 rounded-control">[date to be set on publication]</mark>{% endif %}
+        </p>
+    </header>
+    {% block doc_body %}{% endblock %}
+    <nav aria-label="Other legal pages" class="pt-4 border-t border-line flex flex-wrap gap-x-5 gap-y-1 text-sm">
+        <a href="{{ url_for('privacy.privacy_policy') }}" class="text-plum font-semibold underline underline-offset-4 py-2">Privacy Policy</a>
+        <a href="{{ url_for('privacy.terms') }}" class="text-plum font-semibold underline underline-offset-4 py-2">Terms of Service</a>
+        <a href="{{ url_for('privacy.cookies') }}" class="text-plum font-semibold underline underline-offset-4 py-2">Cookie Policy</a>
+        <a href="{{ url_for('privacy.refunds') }}" class="text-plum font-semibold underline underline-offset-4 py-2">Refund Policy</a>
+        <a href="{{ url_for('privacy.subprocessors') }}" class="text-plum font-semibold underline underline-offset-4 py-2">Sub-processors</a>
+        <a href="{{ url_for('privacy.contact') }}" class="text-plum font-semibold underline underline-offset-4 py-2">Contact</a>
+    </nav>
+</article>
+{% endblock %}
