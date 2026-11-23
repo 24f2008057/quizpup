@@ -16,11 +16,12 @@
         <li>Your age group (adult or under 18). If you are under 18, we also keep your parent or guardian's email address and a record of their approval.</li>
         <li>Your study content: topics you enter, quizzes and the answers you give, scores, flashcard decks, and notes (text extracted from files you upload, the summary and the PDF we make).</li>
         <li>Files you upload (images and PDFs). They are kept only while they are being processed and are deleted afterwards.</li>
+        <li>Billing records once paid plans are on: your plan, the amount and date of each payment, payment and subscription ids from Razorpay, and a record of how many credits you use.</li>
         <li>Records of what you agreed to: which Terms and Privacy Policy version, when, and how.</li>
         <li>Short-lived codes for email verification, password reset and email change, and the time you created your account and last signed in.</li>
         <li>Technical logs kept by our host: your user id, the type of event and error messages.</li>
     </ul>
-    <p class="text-sm leading-relaxed">We do not collect your precise location, device or advertising identifiers, or payment details. We no longer ask for a phone number. {{ todo('if existing phone numbers are still stored, say so here or delete them first') }}</p>
+    <p class="text-sm leading-relaxed">We do not collect your precise location or device or advertising identifiers. When paid plans are on, your card, UPI or bank details go straight to our payment provider, Razorpay, and never reach us. We no longer ask for a phone number. {{ todo('if existing phone numbers are still stored, say so here or delete them first') }}</p>
 </section>
 
 <section class="space-y-2">
@@ -28,7 +29,8 @@
     <ul class="text-sm leading-relaxed list-disc pl-5 space-y-1">
         <li>To create your account, sign you in and keep it secure.</li>
         <li>To generate and store the quizzes, flashcards and notes you ask for.</li>
-        <li>To send you emails you need, such as verification and password-reset codes.</li>
+        <li>To send you emails you need, such as verification, password-reset codes and a reminder before your plan renews or ends.</li>
+        <li>To take payments, give you the plan you paid for, and handle cancellations and refunds.</li>
         <li>To keep proof of what you agreed to, and to follow the law.</li>
     </ul>
     <p class="text-sm leading-relaxed">{{ todo('lawyer to set the legal basis for each purpose: consent, contract, legitimate use or legal duty, under India\'s DPDP Act and, if you serve people in the EU or UK, the GDPR') }} We do not use your data for advertising and we do not sell it. We do not send marketing email today. If we start, it will need your separate, optional consent.</p>
@@ -68,6 +70,7 @@
         <li>Accounts that were never verified: removed after {{ config['UNVERIFIED_ACCOUNT_DAYS'] }} days.</li>
         <li>Accounts with no sign-in for {{ config['INACTIVE_ACCOUNT_DAYS'] }} days (about two years): removed.</li>
         <li>Uploaded files: deleted once processing ends.</li>
+        <li>Payment records: kept without your name or account link after you delete your account, for as long as accounting and tax law require. {{ todo('lawyer or accountant to state the period') }}</li>
         <li>Expired codes: cleared regularly.</li>
         <li>Logs: for as long as our host keeps them. {{ todo('state the host\'s log retention period') }}</li>
         <li>Backups: held by our database and hosting providers for a limited time after deletion. {{ todo('state the backup retention period of each provider') }}</li>
