@@ -13,14 +13,10 @@ from werkzeug.security import check_password_hash
 from extensions import db, limiter
 from services.privacy_service import (
     delete_user_account, export_user_data, has_current_consent, has_parent_consent,
-    parent_consent_withdrawn, purge_expired, record_consents, record_parental_consent,
-    record_parental_withdrawal
+    purge_expired, record_consents, record_parental_consent
 )
 
-from services.age_service import (
-    parent_manage_url, parse_age_form, read_parent_manage_token, read_parent_token,
-    send_parent_confirmed, send_parent_request
-)
+from services.age_service import parse_age_form, read_parent_token, send_parent_request
 
 from . import privacy_bp
 
@@ -29,8 +25,9 @@ logger = logging.getLogger("quizpup")
 GATE_EXEMPT_ENDPOINTS = {
     'static', 'auth.logout', 'auth.ping_server', 'privacy.accept_terms',
     'privacy.privacy_policy', 'privacy.terms', 'privacy.subprocessors',
+    'privacy.cookies', 'privacy.refunds', 'privacy.contact',
     'privacy.parent_confirm', 'privacy.parent_pending', 'privacy.parent_resend',
-    'privacy.parent_change', 'privacy.parent_manage',
+    'privacy.parent_change',
 }
 
 
@@ -79,22 +76,47 @@ def inject_privacy_context():
     cfg = current_app.config
     return {
         'ai_free_tier': not cfg['GEMINI_PAID_TIER'],
-        'parent_pending_days': cfg['PARENT_PENDING_ACCOUNT_DAYS'],
-        'is_minor_user': bool(current_user.is_authenticated and current_user.age_group == 'minor'),
         'privacy_contact_email': cfg['PRIVACY_CONTACT_EMAIL'],
         'terms_version': cfg['TERMS_VERSION'],
         'privacy_version': cfg['PRIVACY_VERSION'],
+        'legal': {
+            'entity': cfg['LEGAL_ENTITY_NAME'],
+            'address': cfg['LEGAL_ADDRESS'],
+            'support_email': cfg['SUPPORT_EMAIL'],
+            'grievance_name': cfg['GRIEVANCE_OFFICER_NAME'],
+            'grievance_email': cfg['GRIEVANCE_OFFICER_EMAIL'],
+            'reply_time': cfg['LEGAL_REPLY_TIME'],
+            'law': cfg['LEGAL_GOVERNING_LAW'],
+            'court_place': cfg['LEGAL_COURT_PLACE'],
+            'effective': cfg['LEGAL_EFFECTIVE_DATE'],
+            'reviewed': cfg['LEGAL_REVIEWED_BY_LAWYER'],
+        },
     }
 
 
 @privacy_bp.route('/privacy')
 def privacy_policy():
-    return render_template('legal_page.html', page='privacy')
+    return render_template('legal/privacy.html')
 
 
 @privacy_bp.route('/terms')
 def terms():
-    return render_template('legal_page.html', page='terms')
+    return render_template('legal/terms.html')
+
+
+@privacy_bp.route('/cookies')
+def cookies():
+    return render_template('legal/cookies.html')
+
+
+@privacy_bp.route('/refunds')
+def refunds():
+    return render_template('legal/refunds.html')
+
+
+@privacy_bp.route('/contact')
+def contact():
+    return render_template('legal/contact.html')
 
 
 @privacy_bp.route('/subprocessors')
@@ -183,7 +205,25 @@ def stamp_last_login(sender, user):
         logger.exception("Could not record last login time")
 
 
+LEGAL_REQUIRED_SETTINGS = (
+    'LEGAL_ENTITY_NAME', 'LEGAL_ADDRESS', 'SUPPORT_EMAIL', 'PRIVACY_CONTACT_EMAIL',
+    'GRIEVANCE_OFFICER_NAME', 'GRIEVANCE_OFFICER_EMAIL', 'LEGAL_REPLY_TIME',
+    'LEGAL_GOVERNING_LAW', 'LEGAL_COURT_PLACE', 'LEGAL_EFFECTIVE_DATE',
+)
+
+
 def register_privacy_cli(app):
+    @app.cli.command('legal-check')
+    def legal_check_command():
+        missing = [name for name in LEGAL_REQUIRED_SETTINGS if not app.config.get(name)]
+        for name in missing:
+            click.echo(f'missing: {name}')
+        if not app.config.get('LEGAL_REVIEWED_BY_LAWYER'):
+            click.echo('LEGAL_REVIEWED_BY_LAWYER is not true')
+        if missing or not app.config.get('LEGAL_REVIEWED_BY_LAWYER'):
+            raise SystemExit(1)
+        click.echo('legal settings complete')
+
     @app.cli.command('purge-data')
     def purge_data_command():
         result = purge_expired()
@@ -204,12 +244,7 @@ def parent_confirm(token):
             return render_template('parent_confirm.html', state='form', child_name=user.first_name), 400
         record_parental_consent(user)
         db.session.commit()
-        if not send_parent_confirmed(user):
-            logger.warning("Parent confirmation receipt could not be sent for user_id=%s", user.id)
-        return render_template(
-            'parent_confirm.html', state='done', child_name=user.first_name,
-            manage_url=parent_manage_url(user)
-        )
+        return render_template('parent_confirm.html', state='done', child_name=user.first_name)
     return render_template('parent_confirm.html', state='form', child_name=user.first_name)
 
 
@@ -218,10 +253,7 @@ def parent_confirm(token):
 def parent_pending():
     if current_user.age_group != 'minor' or has_parent_consent(current_user):
         return redirect(url_for('dashboard.home'))
-    return render_template(
-        'parent_pending.html', parent_email=current_user.parent_email,
-        withdrawn=parent_consent_withdrawn(current_user)
-    )
+    return render_template('parent_pending.html', parent_email=current_user.parent_email)
 
 
 @privacy_bp.route('/parent-pending/resend', methods=['POST'])
@@ -256,48 +288,3 @@ def parent_change():
     else:
         flash('Saved, but we could not send the email right now. Please try again later.', 'danger')
     return redirect(url_for('privacy.parent_pending'))
-
-
-def _manage_status(user):
-    if has_parent_consent(user):
-        return 'confirmed'
-    if parent_consent_withdrawn(user):
-        return 'withdrawn'
-    return 'not_confirmed'
-
-
-@privacy_bp.route('/parent/manage/<token>', methods=['GET', 'POST'])
-@limiter.limit("30 per hour")
-def parent_manage(token):
-    user = read_parent_manage_token(token)
-    if user is None:
-        return render_template('parent_manage.html', state='invalid'), 400
-    child_name = user.first_name
-    if request.method == 'POST':
-        action = request.form.get('action')
-        if action == 'withdraw':
-            if has_parent_consent(user):
-                record_parental_withdrawal(user)
-                db.session.commit()
-            return render_template(
-                'parent_manage.html', state='manage', child_name=child_name, status=_manage_status(user)
-            )
-        if action == 'delete':
-            if request.form.get('confirm_delete') != 'on':
-                flash('Please tick the box to confirm deletion.', 'danger')
-                return render_template(
-                    'parent_manage.html', state='manage', child_name=child_name, status=_manage_status(user)
-                ), 400
-            deleted, _ = delete_user_account(user)
-            if not deleted:
-                flash('We could not delete the account right now. Please try again later.', 'danger')
-                return render_template(
-                    'parent_manage.html', state='manage', child_name=child_name, status='confirmed'
-                ), 500
-            return render_template('parent_manage.html', state='deleted', child_name=child_name)
-        return render_template(
-            'parent_manage.html', state='manage', child_name=child_name, status=_manage_status(user)
-        ), 400
-    return render_template(
-        'parent_manage.html', state='manage', child_name=child_name, status=_manage_status(user)
-    )
