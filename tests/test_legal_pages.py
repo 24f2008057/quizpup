@@ -60,18 +60,42 @@ def test_privacy_page_ai_wording_follows_gemini_tier(app, client, monkeypatch):
     assert "paid tier" in client.get("/privacy").get_data(as_text=True)
 
 
-def test_signup_page_links_terms_and_privacy_and_footer_links_all_pages(client):
+def test_signup_page_links_terms_and_privacy_without_a_footer_strip(client):
     html = client.get("/register").get_data(as_text=True)
     assert 'href="/terms"' in html and 'href="/privacy"' in html
-    for path in ("/cookies", "/refunds", "/contact"):
-        assert f'href="{path}"' in html
+    assert 'aria-label="Legal"' not in html
 
 
-def test_signed_in_account_menu_links_legal_pages(client):
+def test_loading_and_login_pages_have_no_legal_links(client):
+    for path in ("/auth/callback", "/login"):
+        html = client.get(path).get_data(as_text=True)
+        assert 'aria-label="Legal"' not in html
+        assert "Cookie settings" not in html
+
+
+def test_landing_page_is_clean_and_links_about_only(client):
+    html = client.get("/").get_data(as_text=True)
+    assert 'href="/about"' in html
+    assert "Sound off" not in html and "Pause video" not in html
+    assert 'aria-label="Pause background video"' in html
+    for path in ("/privacy", "/terms", "/cookies", "/refunds"):
+        assert f'href="{path}"' not in html
+
+
+@pytest.mark.parametrize("path", PAGES + ("/about", "/subprocessors"))
+def test_every_legal_page_has_a_back_link_and_a_single_link_strip(client, path):
+    html = client.get(path).get_data(as_text=True)
+    assert 'class="back-link"' in html and "data-back-any" in html
+    assert html.count('aria-label="Legal"') == 0
+    assert html.count('aria-label="Other legal pages"') == 1 or path == "/subprocessors"
+
+
+def test_signed_in_account_menu_links_about_and_privacy_terms(client):
     make_user(email="legal2@example.com")
     login(client, "legal2@example.com", "Correct-Horse9!")
     html = client.get("/home").get_data(as_text=True)
-    assert 'href="/contact"' in html and 'href="/privacy"' in html and 'href="/terms"' in html
+    assert 'href="/about"' in html and 'href="/privacy"' in html and 'href="/terms"' in html
+    assert client.get("/about").status_code == 200
 
 
 def test_legal_check_command_fails_until_everything_is_set(app):
