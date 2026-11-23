@@ -17,6 +17,7 @@ logger = logging.getLogger("quizpup")
 from config import Config, IS_PRODUCTION
 from extensions import db, login_manager, csrf, limiter
 from security_headers import register_security_hooks
+from static_assets import init_static_assets
 from error_handlers import register_error_handlers
 from blueprints.auth import auth_bp
 from blueprints.dashboard import dashboard_bp
@@ -50,6 +51,7 @@ def create_app():
     limiter.init_app(app)
 
     register_security_hooks(app)
+    init_static_assets(app)
     register_error_handlers(app)
 
     app.register_blueprint(auth_bp)
