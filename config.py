@@ -50,9 +50,18 @@ class Config:
     TERMS_VERSION = os.environ.get('TERMS_VERSION', '2026-11-draft-1')
     PRIVACY_VERSION = os.environ.get('PRIVACY_VERSION', '2026-11-draft-1')
     PARENT_CONSENT_MAX_AGE_SECONDS = int(os.environ.get('PARENT_CONSENT_MAX_AGE_SECONDS', str(7 * 24 * 3600)))
-    PARENT_MANAGE_MAX_AGE_SECONDS = int(os.environ.get('PARENT_MANAGE_MAX_AGE_SECONDS', str(365 * 24 * 3600)))
-    PARENT_PENDING_ACCOUNT_DAYS = int(os.environ.get('PARENT_PENDING_ACCOUNT_DAYS', '14'))
     UNVERIFIED_ACCOUNT_DAYS = int(os.environ.get('UNVERIFIED_ACCOUNT_DAYS', '7'))
     INACTIVE_ACCOUNT_DAYS = int(os.environ.get('INACTIVE_ACCOUNT_DAYS', '730'))
     GEMINI_PAID_TIER = os.environ.get('GEMINI_PAID_TIER', 'false').lower() == 'true'
     PRIVACY_CONTACT_EMAIL = os.environ.get('PRIVACY_CONTACT_EMAIL', '')
+
+    LEGAL_ENTITY_NAME = os.environ.get('LEGAL_ENTITY_NAME', '')
+    LEGAL_ADDRESS = os.environ.get('LEGAL_ADDRESS', '')
+    SUPPORT_EMAIL = os.environ.get('SUPPORT_EMAIL', '')
+    GRIEVANCE_OFFICER_NAME = os.environ.get('GRIEVANCE_OFFICER_NAME', '')
+    GRIEVANCE_OFFICER_EMAIL = os.environ.get('GRIEVANCE_OFFICER_EMAIL', '')
+    LEGAL_REPLY_TIME = os.environ.get('LEGAL_REPLY_TIME', '')
+    LEGAL_GOVERNING_LAW = os.environ.get('LEGAL_GOVERNING_LAW', '')
+    LEGAL_COURT_PLACE = os.environ.get('LEGAL_COURT_PLACE', '')
+    LEGAL_EFFECTIVE_DATE = os.environ.get('LEGAL_EFFECTIVE_DATE', '')
+    LEGAL_REVIEWED_BY_LAWYER = os.environ.get('LEGAL_REVIEWED_BY_LAWYER', 'false').lower() == 'true'
