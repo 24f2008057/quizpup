@@ -10,6 +10,7 @@ from google.genai import types
 
 from extensions import db
 from models import SuperNote
+from services import credits
 from services.gemini_service import call_gemini, GeminiCooldown, BACKGROUND_MAX_WAIT, MAX_PARALLEL
 from services.pdf_service import render_summary_html, generate_pdf_bytes
 
@@ -192,6 +193,7 @@ def run_supernotes_job(app_instance, note_id, filepath, filename, is_pdf, file_m
             note.status = "failed"
             note.error_message = cd.message
             db.session.commit()
+            credits.refund_charge(note.user_id, f"note-{note_id}")
         except Exception:
             logger.exception("SuperNotes job failed for note %s", note_id)
             if os.path.exists(filepath):
@@ -199,3 +201,4 @@ def run_supernotes_job(app_instance, note_id, filepath, filename, is_pdf, file_m
             note.status = "failed"
             note.error_message = "We couldn't process this file. Please try a clearer scan or a different file."
             db.session.commit()
+            credits.refund_charge(note.user_id, f"note-{note_id}")
