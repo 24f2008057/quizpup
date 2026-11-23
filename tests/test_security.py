@@ -244,7 +244,7 @@ PUBLIC_ENDPOINTS = {
     "auth.complete_oauth_profile_page", "auth.complete_oauth_profile_submit", "auth.ping_server",
     "auth.forgot_password", "auth.verify_otp", "healthz", "privacy.parent_confirm",
     "privacy.privacy_policy", "privacy.terms", "privacy.subprocessors",
-    "privacy.cookies", "privacy.refunds", "privacy.contact",
+    "privacy.cookies", "privacy.refunds", "privacy.contact", "privacy.about",
 }
 
 UNSAFE = {"POST", "PUT", "PATCH", "DELETE"}
