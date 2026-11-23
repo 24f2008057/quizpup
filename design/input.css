@@ -18,7 +18,7 @@
 }
 @font-face {
   font-family: "DynaPuff";
-  src: url("../fonts/DynaPuff-Bold.ttf") format("truetype");
+  src: url("../fonts/DynaPuff-Bold.woff2") format("woff2");
   font-weight: 700;
   font-display: swap;
 }
@@ -258,26 +258,147 @@
       background-color: var(--color-blush-deep);
     }
   }
-  .rail-logout {
+  .account {
+    position: relative;
     margin-top: auto;
-    align-self: flex-start;
+  }
+  .account-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    min-height: 3.25rem;
+    padding: 0.5rem 0.625rem;
+    border: 1px solid transparent;
+    border-radius: var(--radius-panel);
+    background-color: transparent;
+    color: var(--color-ink);
+    text-align: left;
+    cursor: pointer;
+    transition: background-color var(--motion-fast) ease, border-color var(--motion-fast) ease;
+  }
+  .account-btn:hover,
+  .account-btn[aria-expanded="true"] {
+    background-color: var(--color-sunken);
+    border-color: var(--color-line);
+  }
+  .account-avatar {
     display: inline-flex;
     align-items: center;
-    gap: 0.625rem;
-    min-height: 2.75rem;
-    padding: 0 1rem;
+    justify-content: center;
+    flex: none;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: var(--radius-pill);
+    background-color: var(--color-plum);
+    color: var(--color-surface);
+    font-weight: 700;
+    font-size: var(--text-sm);
+  }
+  .account-meta {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1;
+    line-height: 1.25;
+  }
+  .account-name {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .account-plan {
+    font-size: var(--text-xs);
+    color: var(--color-ink-soft);
+  }
+  .account-chevron {
+    flex: none;
+    color: var(--color-ink-soft);
+    transition: transform var(--motion-fast) ease;
+  }
+  .account-btn[aria-expanded="true"] .account-chevron {
+    transform: rotate(180deg);
+  }
+  .account-menu {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: calc(100% + 0.5rem);
+    min-width: 14rem;
+    padding: 0.375rem;
+    background-color: var(--color-surface);
     border: 1px solid var(--color-line);
     border-radius: var(--radius-panel);
-    background-color: var(--color-surface);
+    box-shadow: var(--shadow-overlay);
+    z-index: 50;
+  }
+  .account-menu[hidden] {
+    display: none;
+  }
+  .account-email {
+    margin: 0;
+    padding: 0.5rem 0.75rem 0.625rem;
+    font-size: var(--text-xs);
     color: var(--color-ink-soft);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .account-item {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-height: 2.5rem;
+    padding: 0 0.75rem;
+    border: 0;
+    border-radius: var(--radius-control);
+    background: transparent;
+    color: var(--color-ink);
+    font: inherit;
     font-size: var(--text-sm);
     font-weight: 500;
+    text-align: left;
     text-decoration: none;
-    transition: background-color var(--motion-fast) ease, color var(--motion-fast) ease;
+    cursor: pointer;
   }
-  .rail-logout:hover {
+  .account-item:hover,
+  .account-item:focus-visible {
     background-color: var(--color-sunken);
-    color: var(--color-ink);
+  }
+  .account-item-danger {
+    color: var(--color-danger);
+  }
+  .account-item-danger:hover,
+  .account-item-danger:focus-visible {
+    background-color: var(--color-danger-bg);
+  }
+  .account-sep {
+    height: 1px;
+    margin: 0.375rem 0.25rem;
+    border: 0;
+    background-color: var(--color-line);
+  }
+
+  .soft-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-line) transparent;
+  }
+  .soft-scroll::-webkit-scrollbar {
+    width: 0.625rem;
+  }
+  .soft-scroll::-webkit-scrollbar-track {
+    background: transparent;
+    margin-block: 0.75rem;
+  }
+  .soft-scroll::-webkit-scrollbar-thumb {
+    background-color: var(--color-line);
+    border: 3px solid var(--color-surface);
+    border-radius: var(--radius-pill);
+  }
+  .soft-scroll::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-edge);
   }
 
   .page-wide {
@@ -306,6 +427,8 @@
       top: 4.5rem;
       max-height: calc(100dvh - 6rem);
       overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--color-line) transparent;
       padding: 1rem;
       background-color: var(--color-surface);
       border: 1px solid var(--color-line);
@@ -612,5 +735,27 @@
 @media (prefers-contrast: more) {
   .bottom-nav-bar {
     border-top: 2px solid var(--color-plum);
+  }
+}
+
+@view-transition {
+  navigation: auto;
+}
+.rail {
+  view-transition-name: app-rail;
+}
+.bottom-nav-bar {
+  view-transition-name: app-bottom-nav;
+}
+::view-transition-group(root) {
+  animation-duration: var(--motion-base);
+}
+::view-transition-group(app-rail),
+::view-transition-group(app-bottom-nav) {
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  @view-transition {
+    navigation: none;
   }
 }
