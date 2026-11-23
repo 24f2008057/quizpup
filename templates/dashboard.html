@@ -4,7 +4,7 @@
 
 <header class="flex items-center gap-4 px-5 pt-2 pb-1">
     {% if view == 'home' %}
-    <img src="{{ url_for('static', filename='images/mascot-happy-sitting.png') }}" class="h-20 w-auto object-contain" alt="">
+    <img src="{{ url_for('static', filename='images/mascot-happy-sitting.webp') }}" class="h-20 w-auto object-contain" alt="">
     <div class="min-w-0">
         <p class="text-sm text-ink-soft">Welcome back</p>
         <h1 class="truncate">Hello, {{ current_user.username }}</h1>
@@ -347,6 +347,16 @@
                 Log out
             </a>
         </div>
+    </div>
+
+    <div class="min-[60rem]:hidden bg-surface border border-line rounded-card p-6 elevate-sm space-y-2 mt-4">
+        <h2 class="text-xl">Legal</h2>
+        <nav aria-label="Legal" class="flex flex-col">
+            <a href="{{ url_for('privacy.privacy_policy') }}" class="min-h-12 flex items-center text-plum font-semibold underline underline-offset-4">Privacy policy</a>
+            <a href="{{ url_for('privacy.terms') }}" class="min-h-12 flex items-center text-plum font-semibold underline underline-offset-4">Terms of service</a>
+            <a href="{{ url_for('privacy.subprocessors') }}" class="min-h-12 flex items-center text-plum font-semibold underline underline-offset-4">Sub-processors</a>
+            <button type="button" data-cookie-settings class="min-h-12 flex items-center text-plum font-semibold underline underline-offset-4 cursor-pointer text-left">Cookie settings</button>
+        </nav>
     </div>
 
     <div class="bg-surface border border-line rounded-card p-6 elevate-sm space-y-4 mt-4">
@@ -896,6 +906,21 @@
         };
     })();
 
+    let lottiePromise = null;
+    function loadLottie() {
+        if (window.lottie) return Promise.resolve(window.lottie);
+        if (!lottiePromise) {
+            lottiePromise = new Promise(function (resolve) {
+                const el = document.createElement('script');
+                el.src = "{{ url_for('static', filename='vendor/lottie-5.12.2.min.js') }}";
+                el.onload = function () { resolve(window.lottie); };
+                el.onerror = function () { resolve(null); };
+                document.head.appendChild(el);
+            });
+        }
+        return lottiePromise;
+    }
+
     async function buildAIFlashcards() {
         const inputField = document.getElementById('fcTopicField');
         const targetBtn = document.getElementById('fcGenBtn');
@@ -909,17 +934,17 @@
 
         targetBtn.innerHTML = `<span class="inline-flex items-center justify-center gap-1.5"><div id="fcBtnLottie" class="w-10 h-10 flex items-center justify-center"></div><span class="text-xs font-bold">Building...</span></span>`;
         const container = document.getElementById('fcBtnLottie');
-        if (window.lottie && container) {
-            anim = window.lottie.loadAnimation({
-                container: container,
-                renderer: 'svg',
-                loop: true,
-                autoplay: true,
-                path: lottieUrl
-            });
-        } else {
-            targetBtn.innerHTML = `<span class="inline-flex items-center justify-center gap-1.5"><lottie-player src="${lottieUrl}" background="transparent" speed="1" style="width: 40px; height: 40px;" loop autoplay></lottie-player><span class="text-xs font-bold">Building...</span></span>`;
-        }
+        loadLottie().then(function (lottie) {
+            if (lottie && container && container.isConnected) {
+                anim = lottie.loadAnimation({
+                    container: container,
+                    renderer: 'svg',
+                    loop: true,
+                    autoplay: true,
+                    path: lottieUrl
+                });
+            }
+        });
 
         try {
             const res = await fetch('/api/flashcards/generate', {
