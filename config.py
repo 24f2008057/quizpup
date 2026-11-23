@@ -65,3 +65,17 @@ class Config:
     LEGAL_COURT_PLACE = os.environ.get('LEGAL_COURT_PLACE', '')
     LEGAL_EFFECTIVE_DATE = os.environ.get('LEGAL_EFFECTIVE_DATE', '')
     LEGAL_REVIEWED_BY_LAWYER = os.environ.get('LEGAL_REVIEWED_BY_LAWYER', 'false').lower() == 'true'
+
+    RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID', '')
+    RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET', '')
+    RAZORPAY_WEBHOOK_SECRET = os.environ.get('RAZORPAY_WEBHOOK_SECRET', '')
+    RAZORPAY_PLAN_PRO = os.environ.get('RAZORPAY_PLAN_PRO', '')
+    RAZORPAY_PLAN_MAX = os.environ.get('RAZORPAY_PLAN_MAX', '')
+    BILLING_ENABLED = os.environ.get('BILLING_ENABLED', 'false').lower() == 'true'
+    FREE_CREDITS = int(os.environ.get('FREE_CREDITS', '15'))
+    PRO_PRICE_INR = int(os.environ.get('PRO_PRICE_INR', '399'))
+    PRO_CREDITS = int(os.environ.get('PRO_CREDITS', '200'))
+    MAX_PRICE_INR = int(os.environ.get('MAX_PRICE_INR', '799'))
+    MAX_CREDITS = int(os.environ.get('MAX_CREDITS', '500'))
+    PASS_DISCOUNT_PERCENT = int(os.environ.get('PASS_DISCOUNT_PERCENT', '0'))
+    RENEWAL_REMINDER_DAYS = int(os.environ.get('RENEWAL_REMINDER_DAYS', '3'))
