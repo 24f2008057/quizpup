@@ -122,8 +122,8 @@
                     <a role="menuitem" class="account-item" href="{{ url_for('profile.profile') }}">Profile</a>
                     <a role="menuitem" class="account-item" href="{{ url_for('privacy.privacy_policy') }}">Privacy policy</a>
                     <a role="menuitem" class="account-item" href="{{ url_for('privacy.terms') }}">Terms of service</a>
-                    <a role="menuitem" class="account-item" href="{{ url_for('privacy.subprocessors') }}">Sub-processors</a>
                     <button type="button" role="menuitem" class="account-item" data-cookie-settings>Cookie settings</button>
+                    <a role="menuitem" class="account-item" href="{{ url_for('privacy.contact') }}">Contact and policies</a>
                     <hr class="account-sep">
                     <a role="menuitem" class="account-item account-item-danger" href="{{ url_for('auth.logout') }}" data-logout>Log out</a>
                 </div>
@@ -157,6 +157,18 @@
             <div class="page{% if view == 'quiz' %} page-wide{% endif %}">
                 {% block content %}{% endblock %}
             </div>
+            {% if not current_user.is_authenticated %}
+            <footer class="page pb-6 pt-2">
+                <nav aria-label="Legal" class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-ink-soft">
+                    <a href="{{ url_for('privacy.privacy_policy') }}" class="underline underline-offset-4 py-2">Privacy</a>
+                    <a href="{{ url_for('privacy.terms') }}" class="underline underline-offset-4 py-2">Terms</a>
+                    <a href="{{ url_for('privacy.cookies') }}" class="underline underline-offset-4 py-2">Cookies</a>
+                    <a href="{{ url_for('privacy.refunds') }}" class="underline underline-offset-4 py-2">Refunds</a>
+                    <a href="{{ url_for('privacy.contact') }}" class="underline underline-offset-4 py-2">Contact</a>
+                    <button type="button" data-cookie-settings class="underline underline-offset-4 py-2 cursor-pointer">Cookie settings</button>
+                </nav>
+            </footer>
+            {% endif %}
         </main>
 
         {% if show_nav %}
