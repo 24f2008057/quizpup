@@ -1,13 +1,15 @@
 import json
+import uuid
 import logging
 
-from flask import request, jsonify
+from flask import request, jsonify, url_for
 from flask_login import login_required, current_user
 from google.genai import types
 
 from extensions import db, limiter
 from models import FlashcardDeck
 from flashcard_data import PRELOADED_DECKS
+from services import credits, plans
 from services.gemini_service import call_gemini, GeminiCooldown
 
 from . import flashcards_bp
@@ -55,6 +57,17 @@ def generate_ai_flashcards():
         return jsonify({"success": False, "error": "Topic argument is completely missing."}), 400
     if len(topic) > 300:
         return jsonify({"success": False, "error": "Topic is too long. Please keep it under 300 characters."}), 400
+
+    ref = f"deck-{uuid.uuid4().hex}"
+    try:
+        credits.charge(current_user, plans.FLASHCARD_CREDITS, ref)
+    except credits.InsufficientCredits as exc:
+        return jsonify({
+            "success": False,
+            "code": "insufficient_credits",
+            "error": f"This needs {exc.needed} credit and you have {exc.available}. Credits refill on your plan's next reset, or you can upgrade on the Premium page.",
+            "upgrade_url": url_for('dashboard.account'),
+        }), 402
 
     fc_schema = types.Schema(
         type=types.Type.OBJECT,
@@ -113,11 +126,13 @@ Card design rules:
 
         return jsonify({"success": True, "deck": cards, "deck_id": saved_deck.id})
     except GeminiCooldown as cd:
+        credits.refund_charge(current_user.id, ref)
         response = jsonify({"success": False, "error": cd.message, "retry_after": cd.retry_after})
         response.status_code = 429
         response.headers["Retry-After"] = str(cd.retry_after)
         return response
     except Exception:
+        credits.refund_charge(current_user.id, ref)
         logger.exception("AI flashcard generation failed for user %s", current_user.id)
         return jsonify({"success": False, "error": "Could not generate flashcards right now. Please try again shortly."}), 500
 
