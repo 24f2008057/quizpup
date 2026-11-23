@@ -35,9 +35,12 @@ h1 { font-family: var(--font-serif); font-weight: 560; font-size: 3.6rem; line-h
 
 .foot { grid-area: foot; padding: 1.2rem 1.5rem 1.6rem clamp(24px, 5vw, 88px); position: relative; z-index: 2; }
 .foot ul { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: .4rem 1.4rem; font-size: 1rem; color: var(--color-ink-soft); }
-.foot .legal-links { display: flex; flex-wrap: wrap; gap: 0 1.2rem; margin-top: .6rem; font-size: .9375rem; }
-.foot .legal-links a { color: var(--color-ink-soft); text-decoration: underline; text-underline-offset: 4px; padding: .6rem 0; }
 
+.vctl { position: fixed; right: 1.25rem; bottom: 1.25rem; z-index: 5; width: 2.75rem; height: 2.75rem; border-radius: var(--radius-pill); border: 1.5px solid var(--color-plum); background: rgba(250, 249, 246, .9); color: var(--color-plum); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: background .15s, color .15s; }
+.vctl:hover { background: var(--color-plum); color: #fff; }
+.vctl .i-play { display: none; }
+.vctl[aria-pressed="true"] .i-pause { display: none; }
+.vctl[aria-pressed="true"] .i-play { display: block; }
 .stage { grid-area: stage; position: relative; min-height: 0; background: var(--color-paper); }
 #bg { position: absolute; inset: 0; background: var(--color-paper); }
 .fade { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(to right, var(--color-paper) 0%, rgba(238, 236, 231, 0) 30%), linear-gradient(to bottom, var(--color-paper) 0%, rgba(238, 236, 231, 0) 16%), linear-gradient(to left, var(--color-paper) 0%, rgba(238, 236, 231, 0) 6%), linear-gradient(to top, var(--color-paper) 0%, rgba(238, 236, 231, 0) 8%); }
@@ -64,8 +67,7 @@ h1 { font-family: var(--font-serif); font-weight: 560; font-size: 3.6rem; line-h
 <a class="brand wordmark" href="{{ url_for('auth.index') }}">Quiz<span>Pup</span></a>
 
 <nav class="actions">
-  <button id="motion" type="button">Pause video</button>
-  <button id="sound" type="button">Sound off</button>
+  <a href="{{ url_for('privacy.about') }}">About</a>
   <a class="login" href="{{ url_for('auth.login') }}">Log in</a>
 </nav>
 
@@ -79,7 +81,12 @@ h1 { font-family: var(--font-serif); font-weight: 560; font-size: 3.6rem; line-h
   </div>
 </main>
 
-<footer class="foot"><ul><li>AI quizzes</li><li>Flashcards</li><li>SuperNotes</li><li>Timed tests</li></ul><nav aria-label="Legal" class="legal-links"><a href="{{ url_for('privacy.privacy_policy') }}">Privacy</a><a href="{{ url_for('privacy.terms') }}">Terms</a><a href="{{ url_for('privacy.cookies') }}">Cookies</a><a href="{{ url_for('privacy.refunds') }}">Refunds</a><a href="{{ url_for('privacy.contact') }}">Contact</a></nav></footer>
+<footer class="foot"><ul><li>AI quizzes</li><li>Flashcards</li><li>SuperNotes</li><li>Timed tests</li></ul></footer>
+
+<button id="motion" class="vctl" type="button" aria-label="Pause background video" aria-pressed="false">
+  <svg class="i-pause" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+  <svg class="i-play" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg>
+</button>
 
 <div class="stage" aria-hidden="true">
   <div id="bg"></div>
@@ -108,7 +115,7 @@ h1 { font-family: var(--font-serif); font-weight: 560; font-size: 3.6rem; line-h
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const motion = document.getElementById('motion');
   let userPaused = reduce;
-  const syncMotion = () => { motion.textContent = userPaused ? 'Play video' : 'Pause video'; };
+  const syncMotion = () => { motion.setAttribute('aria-pressed', userPaused ? 'true' : 'false'); motion.setAttribute('aria-label', userPaused ? 'Play background video' : 'Pause background video'); };
   const start = () => { if (!userPaused) vid.play().catch(() => {}); };
   syncMotion();
   start();
@@ -117,13 +124,6 @@ h1 { font-family: var(--font-serif); font-weight: 560; font-size: 3.6rem; line-h
     userPaused = !userPaused;
     if (userPaused) vid.pause(); else vid.play().catch(() => {});
     syncMotion();
-  });
-
-  const btn = document.getElementById('sound');
-  btn.addEventListener('click', () => {
-    vid.muted = !vid.muted;
-    if (!vid.muted && !userPaused) vid.play().catch(() => {});
-    btn.textContent = vid.muted ? 'Sound off' : 'Sound on';
   });
 </script>
 </body>
