@@ -1,0 +1,19 @@
+{% extends 'legal/_layout.html' %}
+{% from '_legal_macros.html' import ph, todo, link, email %}
+{% block title %}About — QuizPup{% endblock %}
+{% block doc_title %}About QuizPup{% endblock %}
+{% block doc_version %}{% endblock %}
+{% block doc_body %}
+<section class="space-y-2">
+    <h2 class="text-xl">What it is</h2>
+    <p class="text-sm leading-relaxed">QuizPup helps you prepare for exams. You type a topic or upload your notes, and it makes practice quizzes, flashcards and note summaries with AI, all in one calm place. It is study help and does not replace your syllabus or teachers.</p>
+</section>
+<section class="space-y-2">
+    <h2 class="text-xl">Who runs it</h2>
+    <p class="text-sm leading-relaxed">{{ ph(legal.entity, 'who runs QuizPup; no business is registered yet') }}. {{ todo('a short, true line about who built it and why, written by you') }}</p>
+</section>
+<section class="space-y-2">
+    <h2 class="text-xl">Policies and contact</h2>
+    <p class="text-sm leading-relaxed">Our Privacy Policy, Terms, Cookie Policy, Refund Policy, sub-processor list and contact details are linked below. You can also <button type="button" data-cookie-settings class="text-plum font-semibold underline underline-offset-4 cursor-pointer">change your cookie choice</button>.</p>
+</section>
+{% endblock %}
