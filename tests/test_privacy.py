@@ -81,7 +81,7 @@ def test_new_policy_version_requires_reacceptance(client, app):
 
 
 def test_legal_pages_are_public_and_logout_is_not_gated(client):
-    for path in ("/privacy", "/terms", "/subprocessors"):
+    for path in ("/privacy", "/terms", "/cookies", "/refunds", "/contact", "/subprocessors"):
         assert client.get(path).status_code == 200
     make_user(email="out@example.com", consented=False)
     login(client, "out@example.com", "Correct-Horse9!")
