@@ -1,0 +1,37 @@
+{% extends 'legal/_layout.html' %}
+{% from '_legal_macros.html' import ph, todo, link, email %}
+{% block title %}Contact — QuizPup{% endblock %}
+{% block doc_title %}Contact{% endblock %}
+{% block doc_version %}{% endblock %}
+{% block doc_body %}
+<section class="space-y-2">
+    <h2 class="text-xl">Business details</h2>
+    <dl class="text-sm leading-relaxed space-y-3">
+        <div>
+            <dt class="font-semibold">Operated by</dt>
+            <dd>{{ ph(legal.entity, 'legal name; no business is registered yet') }}</dd>
+        </div>
+        <div>
+            <dt class="font-semibold">Address</dt>
+            <dd>{{ ph(legal.address, 'postal address') }}</dd>
+        </div>
+        <div>
+            <dt class="font-semibold">Support email</dt>
+            <dd>{% if legal.support_email %}{{ email(legal.support_email) }}{% else %}{{ todo('support email') }}{% endif %}</dd>
+        </div>
+        <div>
+            <dt class="font-semibold">Privacy requests</dt>
+            <dd>{% if privacy_contact_email %}{{ email(privacy_contact_email) }}{% else %}{{ todo('privacy contact email') }}{% endif %}</dd>
+        </div>
+        <div>
+            <dt class="font-semibold">Grievance officer</dt>
+            <dd>{{ ph(legal.grievance_name, 'name') }}{% if legal.grievance_email %}, {{ email(legal.grievance_email) }}{% else %}, {{ todo('email') }}{% endif %}</dd>
+        </div>
+        <div>
+            <dt class="font-semibold">We aim to reply within</dt>
+            <dd>{{ ph(legal.reply_time, 'reply time you can keep, for example 5 working days') }}</dd>
+        </div>
+    </dl>
+    <p class="text-sm leading-relaxed">{{ todo('lawyer to confirm which contact details the law requires you to publish for an online service in India') }}</p>
+</section>
+{% endblock %}
