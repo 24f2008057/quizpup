@@ -1,0 +1,73 @@
+{% extends 'legal/_layout.html' %}
+{% from '_legal_macros.html' import ph, todo, link, email %}
+{% block title %}Cookie Policy — QuizPup{% endblock %}
+{% block doc_title %}Cookie Policy{% endblock %}
+{% block doc_version %}Version {{ privacy_version }}.{% endblock %}
+{% block doc_body %}
+<section class="space-y-2">
+    <h2 class="text-xl">The short version</h2>
+    <p class="text-sm leading-relaxed">QuizPup uses only the cookies and browser storage it needs to work. It uses no advertising, analytics or tracking cookies at the moment. If we add optional ones later, they will stay off until you allow them.</p>
+    <p><button type="button" data-cookie-settings class="btn-secondary font-semibold min-h-12 px-5 rounded-control text-base cursor-pointer">Change my cookie choice</button></p>
+</section>
+
+<section class="space-y-2">
+    <h2 class="text-xl">What we store</h2>
+    <div class="overflow-x-auto" tabindex="0" role="region" aria-label="Table, scrolls sideways on small screens">
+        <table class="w-full text-sm border border-line rounded-control">
+            <caption class="sr-only">Cookies and browser storage used by QuizPup</caption>
+            <thead class="bg-sunken text-left">
+                <tr>
+                    <th scope="col" class="p-3">Name</th>
+                    <th scope="col" class="p-3">Purpose</th>
+                    <th scope="col" class="p-3">Lasts</th>
+                    <th scope="col" class="p-3">Type</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="border-t border-line">
+                    <th scope="row" class="p-3 text-left">session (cookie)</th>
+                    <td class="p-3">Keeps you signed in and holds the security token that protects forms</td>
+                    <td class="p-3">Up to {{ config['PERMANENT_SESSION_LIFETIME'].days }} days</td>
+                    <td class="p-3">Strictly necessary</td>
+                </tr>
+                <tr class="border-t border-line">
+                    <th scope="row" class="p-3 text-left">remember_token (cookie)</th>
+                    <td class="p-3">Keeps you signed in after you close the browser</td>
+                    <td class="p-3">Up to {{ config['REMEMBER_COOKIE_DURATION'].days }} days</td>
+                    <td class="p-3">Strictly necessary</td>
+                </tr>
+                <tr class="border-t border-line">
+                    <th scope="row" class="p-3 text-left">quizpup_consent (local storage)</th>
+                    <td class="p-3">Remembers your cookie choice</td>
+                    <td class="p-3">Until you clear it</td>
+                    <td class="p-3">Strictly necessary</td>
+                </tr>
+                <tr class="border-t border-line">
+                    <th scope="row" class="p-3 text-left">isLoggedIn (local storage)</th>
+                    <td class="p-3">Lets the app tell whether you are signed in</td>
+                    <td class="p-3">Until you log out or clear it</td>
+                    <td class="p-3">Strictly necessary</td>
+                </tr>
+                <tr class="border-t border-line">
+                    <th scope="row" class="p-3 text-left">Supabase sign-in session (local storage, on sign-in pages)</th>
+                    <td class="p-3">Completes Google and GitHub sign-in</td>
+                    <td class="p-3">Until you clear it</td>
+                    <td class="p-3">Strictly necessary</td>
+                </tr>
+                <tr class="border-t border-line">
+                    <th scope="row" class="p-3 text-left">quizpup_splash_shown (session storage)</th>
+                    <td class="p-3">Shows the opening screen once per visit</td>
+                    <td class="p-3">Until you close the tab</td>
+                    <td class="p-3">Strictly necessary</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="space-y-2">
+    <h2 class="text-xl">Managing cookies</h2>
+    <p class="text-sm leading-relaxed">You can change your choice at any time with the button above or from the account menu. You can also block or delete cookies in your browser settings, but QuizPup will not keep you signed in without the cookies listed above.</p>
+    <p class="text-sm leading-relaxed">{{ todo('lawyer to confirm this page and the banner meet the law that applies to your users, and re-check the table whenever analytics or a payment provider is added') }} For how we handle personal data generally, see the {{ link('privacy.privacy_policy', 'Privacy Policy') }}.</p>
+</section>
+{% endblock %}

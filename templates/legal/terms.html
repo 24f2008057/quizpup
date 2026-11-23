@@ -1,0 +1,61 @@
+{% extends 'legal/_layout.html' %}
+{% from '_legal_macros.html' import ph, todo, link, email %}
+{% block title %}Terms of Service — QuizPup{% endblock %}
+{% block doc_title %}Terms of Service{% endblock %}
+{% block doc_version %}Version {{ terms_version }}.{% endblock %}
+{% block doc_body %}
+<section class="space-y-2">
+    <h2 class="text-xl">About these terms</h2>
+    <p class="text-sm leading-relaxed">These terms are between you and {{ ph(legal.entity, 'legal name of the operator; no business is registered yet') }} ("QuizPup", "we"), {{ ph(legal.address, 'address') }}. By creating an account or using QuizPup you agree to them and to the {{ link('privacy.privacy_policy', 'Privacy Policy') }}.</p>
+</section>
+
+<section class="space-y-2">
+    <h2 class="text-xl">Who can use QuizPup</h2>
+    <p class="text-sm leading-relaxed">You must give true details when you sign up and keep your password private. If you are under 18, a parent or guardian must approve your account by email before you can use QuizPup. {{ todo('lawyer to confirm the age rules, including whether under-18 users should be allowed at all given Google\'s Gemini terms') }}</p>
+</section>
+
+<section class="space-y-2">
+    <h2 class="text-xl">What QuizPup does, and what it does not</h2>
+    <p class="text-sm leading-relaxed">QuizPup uses AI to create practice quizzes, flashcards and notes for exam preparation. AI output can be wrong, incomplete or out of date. It is study help, not an official syllabus, question bank or exam, and it is not professional advice. QuizPup is not connected to, or endorsed by, any exam body. We do not promise any score, rank or result.</p>
+</section>
+
+<section class="space-y-2">
+    <h2 class="text-xl">Your content</h2>
+    <p class="text-sm leading-relaxed">You keep ownership of what you type and upload. You give us permission to store it and to send it to our providers (see the {{ link('privacy.subprocessors', 'sub-processors') }}) only to run QuizPup for you. Only upload material you have the right to use. {{ todo('lawyer to word the licence, and to say who owns AI-generated output') }}</p>
+</section>
+
+<section class="space-y-2">
+    <h2 class="text-xl">Acceptable use</h2>
+    <p class="text-sm leading-relaxed">Do not break the law, attack or overload QuizPup, try to access other people's accounts or data, scrape it with automated tools, resell it, or upload material that is unlawful or that infringes someone else's rights. We may limit or suspend accounts that do.</p>
+</section>
+
+<section class="space-y-2">
+    <h2 class="text-xl">Plans and payments</h2>
+    <p class="text-sm leading-relaxed">QuizPup is free to use for now. Paid plans are planned. Before you can buy one we will show you the price, the billing period, whether it renews automatically, and how to cancel, with no extra charges added at the end. Cancelling will be available from your account without contacting us. Refunds are covered in the {{ link('privacy.refunds', 'Refund Policy') }}. {{ todo('plan names, prices in INR including taxes, renewal and cancellation terms; to be written when payments are built and reviewed by a lawyer') }}</p>
+</section>
+
+<section class="space-y-2">
+    <h2 class="text-xl">Availability</h2>
+    <p class="text-sm leading-relaxed">We work to keep QuizPup running, but we do not promise it will always be available or error-free, and we have not measured or committed to an uptime percentage. It may be slow or briefly offline during updates, outages at our providers, or after a period of no use. {{ todo('hosting plan: confirm whether the service sleeps when idle') }} {{ todo('target uptime figure; set it only after load testing in Workstream 11 shows it can be met, and decide whether it is a goal or a promise') }}</p>
+</section>
+
+<section class="space-y-2">
+    <h2 class="text-xl">Ending your account</h2>
+    <p class="text-sm leading-relaxed">You can delete your account at any time from your Profile page. We may suspend or close an account that breaks these terms. {{ todo('lawyer to add notice period and what happens to paid time left') }}</p>
+</section>
+
+<section class="space-y-2">
+    <h2 class="text-xl">Our responsibility</h2>
+    <p class="text-sm leading-relaxed">QuizPup is provided "as is". {{ todo('lawyer to write the disclaimer and limit of liability that is valid under Indian law, including the carve-outs consumer law does not allow us to exclude') }}</p>
+</section>
+
+<section class="space-y-2">
+    <h2 class="text-xl">Changes, law and disputes</h2>
+    <p class="text-sm leading-relaxed">If we change these terms in a material way we will update the version above and ask you to accept again. These terms are governed by the laws of {{ ph(legal.law, 'governing law, for example India') }}, and disputes go to the courts of {{ ph(legal.court_place, 'city for courts') }}. {{ todo('lawyer to confirm, and to decide whether to add mediation or arbitration') }}</p>
+</section>
+
+<section class="space-y-2">
+    <h2 class="text-xl">Contact</h2>
+    <p class="text-sm leading-relaxed">See the {{ link('privacy.contact', 'Contact page') }} for how to reach us and our grievance officer.</p>
+</section>
+{% endblock %}
