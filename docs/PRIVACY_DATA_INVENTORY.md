@@ -90,3 +90,14 @@ To remove phone numbers already stored, after confirming you do not need them:
 ## 8. India's DPDP Act, 2023
 
 The Act's main duties (notice and consent, children's data and verifiable parental consent, retention and erasure, breach notification) start on 12 May 2027 under the 2025 Rules; consent-manager rules start 12 November 2026. QuizPup's notice, consent records, erasure and export are built toward that date. Two gaps remain: a breach-response procedure (Workstream 1 follow-up) and handling of users under 18, which needs a decision. A grievance contact must be published; set `PRIVACY_CONTACT_EMAIL`.
+
+## Billing data (added in Workstream 7)
+
+| Table | What it holds | Notes |
+|---|---|---|
+| subscription | One row per user: plan, monthly or pass, status, period dates, Razorpay subscription id | Deleted with the account |
+| payment | Amount, plan, Razorpay payment, order and subscription ids, status, refunded amount | On account deletion the user link is removed and the row is kept anonymously. Retention period to be set by an accountant |
+| payment_event | Razorpay webhook event ids | Used only to ignore repeated deliveries |
+| credit_ledger | Credit grants, charges and refunds per user | Deleted with the account |
+
+Card, UPI and bank details are entered in Razorpay's window and never reach QuizPup. Razorpay is a sub-processor.
