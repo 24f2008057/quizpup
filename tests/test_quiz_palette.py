@@ -79,9 +79,31 @@ def test_quiz_page_has_palette_sheet_and_mark_button(client):
     assert 'id="palette-sheet"' in html and "<dialog" in html
 
 
-def test_sidebar_logout_is_a_compact_button_not_a_full_height_nav_item(client):
+def test_account_menu_replaces_logout_button_and_footer_links(client):
     make_user(email="nav@example.com")
     login(client, "nav@example.com", "Correct-Horse9!")
     html = client.get("/home").get_data(as_text=True)
-    assert 'class="rail-logout"' in html
-    assert 'class="nav-item mt-auto"' not in html
+    assert 'class="rail-logout"' not in html
+    assert 'id="accountBtn"' in html and 'aria-haspopup="menu"' in html and 'aria-expanded="false"' in html
+    assert 'role="menu"' in html and "data-logout" in html
+    assert "data-cookie-settings" in html
+    assert 'aria-label="Legal"' not in html
+
+
+def test_legal_links_live_on_profile_page_for_mobile(client):
+    make_user(email="legal@example.com")
+    login(client, "legal@example.com", "Correct-Horse9!")
+    html = client.get("/profile").get_data(as_text=True)
+    assert 'aria-label="Legal"' in html
+
+
+def test_static_assets_are_versioned_cached_and_compressed(client):
+    make_user(email="static@example.com")
+    login(client, "static@example.com", "Correct-Horse9!")
+    html = client.get("/home").get_data(as_text=True)
+    assert "vendor/lottie-5.12.2.min.js\"></script>" not in html
+    assert "app.css?v=" in html
+    resp = client.get("/static/css/app.css?v=abc", headers={"Accept-Encoding": "gzip"})
+    assert "immutable" in resp.headers["Cache-Control"]
+    assert resp.headers.get("Content-Encoding") == "gzip"
+    assert client.get("/home").headers["Cache-Control"] == "no-store"
