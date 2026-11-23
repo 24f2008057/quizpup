@@ -28,11 +28,10 @@
     <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='favicon/apple-touch-icon.png') }}">
     <link rel="manifest" href="{{ url_for('static', filename='favicon/site.webmanifest') }}">
     <title>{% block title %}{% if page_title %}{{ page_title }} — QuizPup{% else %}QuizPup — Exam preparation for any exam{% endif %}{% endblock %}</title>
-    <link rel="preload" as="font" type="font/woff2" crossorigin href="{{ url_for('static', filename='fonts/figtree-latin-wght-normal.woff2') }}">
-    <link rel="preload" as="font" type="font/woff2" crossorigin href="{{ url_for('static', filename='fonts/fraunces-latin-wght-normal.woff2') }}">
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="{{ url_for('static', filename='fonts/figtree-latin-wght-normal.woff2', v=None) }}">
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="{{ url_for('static', filename='fonts/fraunces-latin-wght-normal.woff2', v=None) }}">
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="{{ url_for('static', filename='fonts/DynaPuff-Bold.woff2', v=None) }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
-    <script defer src="{{ url_for('static', filename='vendor/lottie-player-2.0.4.js') }}"></script>
-    <script defer src="{{ url_for('static', filename='vendor/lottie-5.12.2.min.js') }}"></script>
 </head>
 
 {% set show_nav = current_user.is_authenticated and not hide_bottom_nav and view != 'quiz' %}
@@ -117,15 +116,26 @@
                 </a>
                 {% endfor %}
             </nav>
-            <a href="{{ url_for('auth.logout') }}" class="rail-logout">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                    <path d="M16 17l5-5-5-5" />
-                    <path d="M21 12H9" />
-                </svg>
-                <span>Log out</span>
-            </a>
+            <div class="account" data-account>
+                <div id="accountMenu" class="account-menu" role="menu" aria-labelledby="accountBtn" hidden>
+                    <p class="account-email">{{ current_user.email }}</p>
+                    <a role="menuitem" class="account-item" href="{{ url_for('profile.profile') }}">Profile</a>
+                    <a role="menuitem" class="account-item" href="{{ url_for('privacy.privacy_policy') }}">Privacy policy</a>
+                    <a role="menuitem" class="account-item" href="{{ url_for('privacy.terms') }}">Terms of service</a>
+                    <a role="menuitem" class="account-item" href="{{ url_for('privacy.subprocessors') }}">Sub-processors</a>
+                    <button type="button" role="menuitem" class="account-item" data-cookie-settings>Cookie settings</button>
+                    <hr class="account-sep">
+                    <a role="menuitem" class="account-item account-item-danger" href="{{ url_for('auth.logout') }}" data-logout>Log out</a>
+                </div>
+                <button type="button" id="accountBtn" class="account-btn" aria-haspopup="menu" aria-expanded="false" aria-controls="accountMenu">
+                    <span class="account-avatar" aria-hidden="true">{{ (current_user.first_name or current_user.email or '?')[:1]|upper }}</span>
+                    <span class="account-meta">
+                        <span class="account-name">{{ current_user.first_name or current_user.email }}</span>
+                        <span class="account-plan">{{ (current_user.subscription_status or 'Free')|replace(' Tier', '') }} plan</span>
+                    </span>
+                    <svg class="account-chevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6" /></svg>
+                </button>
+            </div>
         </aside>
         {% endif %}
 
@@ -147,16 +157,6 @@
             <div class="page{% if view == 'quiz' %} page-wide{% endif %}">
                 {% block content %}{% endblock %}
             </div>
-            {% if view != 'quiz' %}
-            <footer class="page pb-6 pt-2">
-                <nav aria-label="Legal" class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-ink-soft">
-                    <a href="{{ url_for('privacy.privacy_policy') }}" class="underline underline-offset-4 py-2">Privacy</a>
-                    <a href="{{ url_for('privacy.terms') }}" class="underline underline-offset-4 py-2">Terms</a>
-                    <a href="{{ url_for('privacy.subprocessors') }}" class="underline underline-offset-4 py-2">Sub-processors</a>
-                    <button type="button" data-cookie-settings class="underline underline-offset-4 py-2 cursor-pointer">Cookie settings</button>
-                </nav>
-            </footer>
-            {% endif %}
         </main>
 
         {% if show_nav %}
@@ -175,6 +175,7 @@
 
     {% include '_consent_banner.html' %}
     <script src="{{ url_for('static', filename='js/consent.js') }}"></script>
+    {% if show_nav %}<script src="{{ url_for('static', filename='js/shell.js') }}"></script>{% endif %}
     <script nonce="{{ csp_nonce() }}">
         (function () {
             var links = document.querySelectorAll('[data-back]');
