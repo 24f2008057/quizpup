@@ -25,7 +25,7 @@ logger = logging.getLogger("quizpup")
 GATE_EXEMPT_ENDPOINTS = {
     'static', 'auth.logout', 'auth.ping_server', 'privacy.accept_terms',
     'privacy.privacy_policy', 'privacy.terms', 'privacy.subprocessors',
-    'privacy.cookies', 'privacy.refunds', 'privacy.contact',
+    'privacy.cookies', 'privacy.refunds', 'privacy.contact', 'privacy.about',
     'privacy.parent_confirm', 'privacy.parent_pending', 'privacy.parent_resend',
     'privacy.parent_change',
 }
@@ -112,6 +112,11 @@ def cookies():
 @privacy_bp.route('/refunds')
 def refunds():
     return render_template('legal/refunds.html')
+
+
+@privacy_bp.route('/about')
+def about():
+    return render_template('legal/about.html')
 
 
 @privacy_bp.route('/contact')
