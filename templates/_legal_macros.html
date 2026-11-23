@@ -1,0 +1,15 @@
+{% macro ph(value, label) -%}
+{%- if value -%}{{ value }}{%- else -%}<mark class="bg-warning-bg text-warning font-semibold px-1 rounded-control">[{{ label }}]</mark>{%- endif -%}
+{%- endmacro %}
+
+{% macro todo(label) -%}
+<mark class="bg-warning-bg text-warning font-semibold px-1 rounded-control">[{{ label }}]</mark>
+{%- endmacro %}
+
+{% macro link(endpoint, text) -%}
+<a href="{{ url_for(endpoint) }}" class="text-plum font-semibold underline underline-offset-4">{{ text }}</a>
+{%- endmacro %}
+
+{% macro email(address) -%}
+<a href="mailto:{{ address }}" class="text-plum font-semibold underline underline-offset-4">{{ address }}</a>
+{%- endmacro %}
