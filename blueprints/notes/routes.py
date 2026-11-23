@@ -4,13 +4,14 @@ import uuid
 import logging
 import threading
 
-from flask import request, jsonify, send_file, current_app
+from flask import request, jsonify, send_file, current_app, url_for
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from pypdf import PdfReader
 
 from extensions import db, limiter
 from models import SuperNote
+from services import credits, plans
 from services.security_utils import is_allowed_upload_content, detect_upload_mime, ALLOWED_NOTE_EXTENSIONS
 from services.supernotes_service import run_supernotes_job, SUPERNOTE_MAX_PDF_PAGES
 
@@ -59,11 +60,25 @@ def process_study_notes():
             os.remove(filepath)
             return jsonify({"success": False, "error": f"That PDF has {page_count} pages. Please upload {SUPERNOTE_MAX_PDF_PAGES} pages or fewer at a time."}), 400
 
+    cost = plans.notes_cost(page_count if is_pdf else 1)
     note_title = os.path.splitext(filename)[0].replace('_', ' ').replace('-', ' ').strip() or "Untitled Note"
     note = SuperNote(user_id=current_user.id, title=note_title, status="processing")
     db.session.add(note)
     db.session.commit()
     note_id = note.id
+    try:
+        credits.charge(current_user, cost, f"note-{note_id}")
+    except credits.InsufficientCredits as exc:
+        db.session.delete(note)
+        db.session.commit()
+        if os.path.exists(filepath):
+            os.remove(filepath)
+        return jsonify({
+            "success": False,
+            "code": "insufficient_credits",
+            "error": f"This file needs {exc.needed} credits (1 per page) and you have {exc.available}. Credits refill on your plan's next reset, or you can upgrade on the Premium page.",
+            "upgrade_url": url_for('dashboard.account'),
+        }), 402
 
     threading.Thread(
         target=run_supernotes_job,
