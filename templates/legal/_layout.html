@@ -15,6 +15,7 @@
     </header>
     {% block doc_body %}{% endblock %}
     <nav aria-label="Other legal pages" class="pt-4 border-t border-line flex flex-wrap gap-x-5 gap-y-1 text-sm">
+        <a href="{{ url_for('privacy.about') }}" class="text-plum font-semibold underline underline-offset-4 py-2">About</a>
         <a href="{{ url_for('privacy.privacy_policy') }}" class="text-plum font-semibold underline underline-offset-4 py-2">Privacy Policy</a>
         <a href="{{ url_for('privacy.terms') }}" class="text-plum font-semibold underline underline-offset-4 py-2">Terms of Service</a>
         <a href="{{ url_for('privacy.cookies') }}" class="text-plum font-semibold underline underline-offset-4 py-2">Cookie Policy</a>
