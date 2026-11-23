@@ -49,6 +49,8 @@
     'profile.edit_profile_page': url_for('profile.profile'),
     'quiz.run_quiz': url_for('dashboard.home'),
 } %}
+{% set legal_back = url_for('dashboard.home') if current_user.is_authenticated else url_for('auth.index') %}
+{% for ep in ['privacy.privacy_policy', 'privacy.terms', 'privacy.cookies', 'privacy.refunds', 'privacy.contact', 'privacy.about', 'privacy.subprocessors'] %}{% if back_map.update({ep: legal_back}) %}{% endif %}{% endfor %}
 {% set back_url = back_map.get(request.endpoint) %}
 
 {% set nav_items = [
@@ -123,7 +125,7 @@
                     <a role="menuitem" class="account-item" href="{{ url_for('privacy.privacy_policy') }}">Privacy policy</a>
                     <a role="menuitem" class="account-item" href="{{ url_for('privacy.terms') }}">Terms of service</a>
                     <button type="button" role="menuitem" class="account-item" data-cookie-settings>Cookie settings</button>
-                    <a role="menuitem" class="account-item" href="{{ url_for('privacy.contact') }}">Contact and policies</a>
+                    <a role="menuitem" class="account-item" href="{{ url_for('privacy.about') }}">About and legal</a>
                     <hr class="account-sep">
                     <a role="menuitem" class="account-item account-item-danger" href="{{ url_for('auth.logout') }}" data-logout>Log out</a>
                 </div>
@@ -131,7 +133,7 @@
                     <span class="account-avatar" aria-hidden="true">{{ (current_user.first_name or current_user.email or '?')[:1]|upper }}</span>
                     <span class="account-meta">
                         <span class="account-name">{{ current_user.first_name or current_user.email }}</span>
-                        <span class="account-plan">{{ (current_user.subscription_status or 'Free')|replace(' Tier', '') }} plan</span>
+                        <span class="account-plan">{{ (current_user.subscription_status or 'Free')|replace(' Tier', '') }} plan{% if credit_summary is defined %} · {{ credit_summary }} credits{% endif %}</span>
                     </span>
                     <svg class="account-chevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6" /></svg>
                 </button>
@@ -143,7 +145,7 @@
             {% if back_url %}
             <div class="topbar">
                 <div class="page{% if view == 'quiz' %} page-wide{% endif %} flex">
-                    <a class="back-link" href="{{ back_url }}" data-back>
+                    <a class="back-link" href="{{ back_url }}" data-back{% if request.endpoint and request.endpoint.startswith('privacy.') %} data-back-any{% endif %}>
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"
                             aria-hidden="true">
@@ -157,18 +159,6 @@
             <div class="page{% if view == 'quiz' %} page-wide{% endif %}">
                 {% block content %}{% endblock %}
             </div>
-            {% if not current_user.is_authenticated %}
-            <footer class="page pb-6 pt-2">
-                <nav aria-label="Legal" class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-ink-soft">
-                    <a href="{{ url_for('privacy.privacy_policy') }}" class="underline underline-offset-4 py-2">Privacy</a>
-                    <a href="{{ url_for('privacy.terms') }}" class="underline underline-offset-4 py-2">Terms</a>
-                    <a href="{{ url_for('privacy.cookies') }}" class="underline underline-offset-4 py-2">Cookies</a>
-                    <a href="{{ url_for('privacy.refunds') }}" class="underline underline-offset-4 py-2">Refunds</a>
-                    <a href="{{ url_for('privacy.contact') }}" class="underline underline-offset-4 py-2">Contact</a>
-                    <button type="button" data-cookie-settings class="underline underline-offset-4 py-2 cursor-pointer">Cookie settings</button>
-                </nav>
-            </footer>
-            {% endif %}
         </main>
 
         {% if show_nav %}
@@ -193,18 +183,18 @@
             var links = document.querySelectorAll('[data-back]');
             if (!links.length) return;
             var blocked = /^\/(login|register|logout|verify-email|verify-otp|forgot-password|auth\/)/;
-            function canGoBack() {
+            function canGoBack(anyPage) {
                 if (!document.referrer || window.history.length < 2) return false;
                 try {
                     var ref = new URL(document.referrer);
-                    return ref.origin === window.location.origin && ref.pathname !== window.location.pathname && !blocked.test(ref.pathname);
+                    return ref.origin === window.location.origin && ref.pathname !== window.location.pathname && (anyPage || !blocked.test(ref.pathname));
                 } catch (e) {
                     return false;
                 }
             }
             links.forEach(function (link) {
                 link.addEventListener('click', function (event) {
-                    if (canGoBack()) {
+                    if (canGoBack(link.hasAttribute('data-back-any'))) {
                         event.preventDefault();
                         window.history.back();
                     }
