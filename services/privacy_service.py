@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from flask import current_app
 
 from extensions import db
-from models import User, ConsentRecord, QuizSession, QuizQuestion, FlashcardDeck, SuperNote
+from models import User, ConsentRecord, QuizSession, QuizQuestion, FlashcardDeck, SuperNote, Subscription, Payment, CreditLedger
 
 logger = logging.getLogger("quizpup")
 
@@ -48,38 +48,18 @@ def has_current_consent(user):
 def has_parent_consent(user):
     if user.age_group != "minor":
         return True
-    latest = _latest_parental_record(user)
+    latest = (
+        ConsentRecord.query
+        .filter_by(user_id=user.id, consent_type="parental")
+        .order_by(ConsentRecord.id.desc())
+        .first()
+    )
     return bool(
         latest
         and latest.granted
         and latest.parent_email == user.parent_email
         and latest.policy_version == current_versions()["terms"]
     )
-
-
-def _latest_parental_record(user):
-    return (
-        ConsentRecord.query
-        .filter_by(user_id=user.id, consent_type="parental")
-        .order_by(ConsentRecord.id.desc())
-        .first()
-    )
-
-
-def parent_consent_withdrawn(user):
-    latest = _latest_parental_record(user)
-    return bool(latest and not latest.granted and latest.parent_email == user.parent_email)
-
-
-def record_parental_withdrawal(user, source="parent_withdrawal"):
-    db.session.add(ConsentRecord(
-        user_id=user.id,
-        consent_type="parental",
-        granted=False,
-        policy_version=current_versions()["terms"],
-        source=source,
-        parent_email=user.parent_email,
-    ))
 
 
 def record_parental_consent(user, source="parent_link"):
@@ -173,6 +153,20 @@ def export_user_data(user):
             "last_login_at": _iso(user.last_login_at),
         },
         "consents": consents,
+        "billing": {
+            "plan": user.subscription_status,
+            "payments": [
+                {
+                    "amount_inr": p.amount_paise / 100,
+                    "plan": p.plan,
+                    "type": p.billing,
+                    "status": p.status,
+                    "refunded_inr": p.refunded_paise / 100,
+                    "date": _iso(p.created_at),
+                }
+                for p in Payment.query.filter_by(user_id=user.id).order_by(Payment.id).all()
+            ],
+        },
         "quizzes": quiz_data,
         "flashcard_decks": decks,
         "notes": notes,
@@ -191,15 +185,37 @@ def _delete_supabase_identity(supabase_uid):
         return False
 
 
+def _stop_provider_billing(user_id):
+    from services import razorpay_service
+    sub = Subscription.query.filter_by(user_id=user_id).first()
+    if sub is None or sub.billing != "recurring" or not sub.provider_subscription_id:
+        return True
+    if sub.status in ("cancelled", "completed", "expired", "refunded"):
+        return True
+    if not razorpay_service.configured():
+        return True
+    try:
+        razorpay_service.cancel_subscription(sub.provider_subscription_id, at_cycle_end=False)
+        return True
+    except razorpay_service.RazorpayError:
+        logger.error("Could not cancel the provider subscription during account deletion")
+        return False
+
+
 def delete_user_account(user):
     user_id = user.id
     supabase_uid = user.supabase_uid
+    if not _stop_provider_billing(user_id):
+        return False, False
     try:
         for quiz in QuizSession.query.filter_by(user_id=user_id).all():
             db.session.delete(quiz)
         FlashcardDeck.query.filter_by(user_id=user_id).delete(synchronize_session=False)
         SuperNote.query.filter_by(user_id=user_id).delete(synchronize_session=False)
         ConsentRecord.query.filter_by(user_id=user_id).delete(synchronize_session=False)
+        CreditLedger.query.filter_by(user_id=user_id).delete(synchronize_session=False)
+        Subscription.query.filter_by(user_id=user_id).delete(synchronize_session=False)
+        Payment.query.filter_by(user_id=user_id).update({"user_id": None}, synchronize_session=False)
         db.session.delete(user)
         db.session.commit()
     except Exception:
@@ -234,20 +250,6 @@ def purge_expired(now=None):
         ok, _ = delete_user_account(user)
         removed_unverified += 1 if ok else 0
 
-    pending_cutoff = now - timedelta(days=cfg["PARENT_PENDING_ACCOUNT_DAYS"])
-    never_confirmed = [
-        user for user in User.query.filter(
-            User.age_group == "minor",
-            User.created_at.isnot(None),
-            User.created_at < pending_cutoff,
-        ).all()
-        if ConsentRecord.query.filter_by(user_id=user.id, consent_type="parental").first() is None
-    ]
-    removed_unconfirmed = 0
-    for user in never_confirmed:
-        ok, _ = delete_user_account(user)
-        removed_unconfirmed += 1 if ok else 0
-
     removed_inactive = 0
     for user in inactive:
         ok, _ = delete_user_account(user)
@@ -273,6 +275,5 @@ def purge_expired(now=None):
     return {
         "unverified_accounts_removed": removed_unverified,
         "inactive_accounts_removed": removed_inactive,
-        "unconfirmed_minor_accounts_removed": removed_unconfirmed,
         "expired_codes_cleared": len(expired_otps) + len(email_otps),
     }
