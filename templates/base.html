@@ -110,7 +110,7 @@
         <aside class="rail">
             <a class="wordmark mb-8 px-3" href="{{ url_for('dashboard.home') }}">Quiz<span>Pup</span></a>
             <nav aria-label="Main" class="flex flex-col gap-1">
-                {% for key, href, icon, label in nav_items %}
+                {% for key, href, icon, label in nav_items if key != 'profile' %}
                 <a href="{{ href }}" class="nav-item"{% if view == key %} aria-current="page"{% endif %}>
                     <span class="nav-icon" aria-hidden="true"
                         style="mask-image:url('{{ url_for('static', filename='images/' ~ icon) }}'); -webkit-mask-image:url('{{ url_for('static', filename='images/' ~ icon) }}');"></span>
@@ -133,7 +133,8 @@
                     <span class="account-avatar" aria-hidden="true">{{ (current_user.first_name or current_user.email or '?')[:1]|upper }}</span>
                     <span class="account-meta">
                         <span class="account-name">{{ current_user.first_name or current_user.email }}</span>
-                        <span class="account-plan">{{ (current_user.subscription_status or 'Free')|replace(' Tier', '') }} plan{% if credit_summary is defined %} · {{ credit_summary }} credits{% endif %}</span>
+                        <span class="account-plan">{{ (current_user.subscription_status or 'Free')|replace(' Tier', '') }} plan</span>
+                        {% if credit_summary is defined %}<span class="account-credits">{{ credit_summary }} credits left</span>{% endif %}
                     </span>
                     <svg class="account-chevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6" /></svg>
                 </button>
