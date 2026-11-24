@@ -17,7 +17,7 @@ body { min-height: 100svh; height: auto; display: grid; grid-template-columns: m
 .brand { grid-area: brand; align-self: center; padding: 1.4rem 0 1.4rem clamp(24px, 5vw, 88px); font-size: 1.85rem; }
 
 .actions { grid-area: actions; display: flex; align-items: center; justify-content: flex-end; gap: 1.2rem; padding: 1.4rem clamp(24px, 4vw, 64px) 1.4rem 0; position: relative; z-index: 2; }
-.actions button, .actions a { font: 600 1rem/1 var(--font-sans); color: var(--color-plum); text-decoration: none; background: none; border: 0; cursor: pointer; min-height: 2.75rem; padding: 0 .5rem; transition: color .15s; }
+.actions button, .actions a { font: 600 1rem/1 var(--font-sans); color: var(--color-plum); text-decoration: none; background: none; border: 0; cursor: pointer; min-height: 2.75rem; padding: 0 .5rem; transition: color .15s; display: inline-flex; align-items: center; }
 .actions button:hover, .actions a:hover { color: var(--color-plum-deep); text-decoration: underline; text-underline-offset: 4px; }
 .actions a.login { padding: 0 1.4rem; border: 1.5px solid var(--color-plum); border-radius: var(--radius-pill); display: inline-flex; align-items: center; }
 .actions a.login:hover { background: var(--color-plum); color: #fff; text-decoration: none; }
