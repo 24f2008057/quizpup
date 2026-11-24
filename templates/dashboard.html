@@ -284,20 +284,72 @@
     </div>
 
     {% elif view == 'account' %}
-    <div class="bg-surface border border-line rounded-card p-8 elevate-sm text-center space-y-4 my-4">
-        <div class="w-20 h-20 mx-auto bg-blush rounded-full flex items-center justify-center p-3">
-            <img src="{{ url_for('static', filename='images/premium.png') }}"
-                class="max-h-full max-w-full object-contain" alt="Premium">
-        </div>
-        <h2 class="text-2xl">Premium is on the way</h2>
-        <p class="text-sm text-ink-soft leading-relaxed px-2">We are currently working on adding this feature! Soon,
-            students will gain access to uncapped custom generation limits, deep conceptual tracking charts, and
-            specialized mock examinations.</p>
-        <div
-            class="inline-block bg-tan text-ink text-xs font-bold px-4 py-1.5 rounded-full ">
-            Under Active Development
-        </div>
+    <div class="space-y-4 my-4" id="billingRoot" data-ready="{{ 'true' if billing_ready else 'false' }}" data-adult="{{ 'true' if is_adult else 'false' }}">
+        <section class="bg-surface border border-line rounded-card p-6 elevate-sm space-y-3" aria-labelledby="planHeading">
+            <div class="flex items-center justify-between gap-3">
+                <h2 id="planHeading" class="text-xl">Your plan</h2>
+                <span class="text-xs font-bold text-plum bg-blush px-3 py-1 rounded-full">{{ plan_name }}</span>
+            </div>
+            <p class="text-sm">
+                <span class="font-semibold">{{ credits_left }}</span> credits left{% if plan_key == 'free' %} this month{% endif %}.
+                {% if next_reset %}They reset on {{ next_reset.strftime('%d %B %Y') }}. Unused credits do not carry over.{% endif %}
+            </p>
+            {% if plan_key != 'free' and sub %}
+                {% if renews %}
+                <p class="text-sm text-ink-soft">Renews automatically on {{ sub.current_period_end.strftime('%d %B %Y') }} until you cancel.</p>
+                <div id="cancelBox" class="space-y-2">
+                    <button type="button" id="cancelStart" class="btn-secondary font-semibold min-h-12 px-5 rounded-control text-base cursor-pointer">Cancel renewal</button>
+                    <div id="cancelConfirm" hidden class="space-y-2">
+                        <p class="text-sm">You will keep {{ plan_name }} until {{ sub.current_period_end.strftime('%d %B %Y') }}, then it will not renew.</p>
+                        <div class="flex flex-wrap gap-2">
+                            <button type="button" id="cancelYes" class="btn-primary font-semibold min-h-12 px-5 rounded-control text-base cursor-pointer">Yes, cancel renewal</button>
+                            <button type="button" id="cancelNo" class="btn-secondary font-semibold min-h-12 px-5 rounded-control text-base cursor-pointer">Keep my plan</button>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <p class="text-sm text-ink-soft">Renewal is off. Your plan ends on {{ sub.current_period_end.strftime('%d %B %Y') }}.</p>
+                {% endif %}
+            {% endif %}
+            <p id="billingMessage" role="status" class="text-sm font-medium" aria-live="polite"></p>
+        </section>
+
+        {% if plan_key == 'free' %}
+        <section class="space-y-4" aria-labelledby="plansHeading">
+            <h2 id="plansHeading" class="text-xl">Choose a plan</h2>
+            {% if not billing_ready %}
+            <p class="text-sm bg-sunken border border-line rounded-control p-3">Payments are opening soon. You can see the plans below.</p>
+            {% elif not is_adult %}
+            <p class="text-sm bg-sunken border border-line rounded-control p-3">Paid plans are for adults. Please ask a parent or guardian.</p>
+            {% endif %}
+            {% for offer in offers %}
+            <form class="bg-surface border border-line rounded-card p-6 elevate-sm space-y-3" data-plan="{{ offer.key }}" data-monthly="{{ offer.monthly }}" data-name="{{ offer.name }}">
+                <div class="flex items-baseline justify-between gap-3">
+                    <h3 class="text-lg">{{ offer.name }}</h3>
+                    <p class="text-sm text-ink-soft">{{ offer.credits }} credits each month</p>
+                </div>
+                <p class="text-2xl font-semibold">₹{{ offer.monthly }}<span class="text-sm font-normal text-ink-soft"> per month</span></p>
+                <p class="text-sm" data-summary>You pay ₹{{ offer.monthly }} today and ₹{{ offer.monthly }} every month until you cancel. Cancel any time here, or stop the autopay in your bank app.</p>
+                <button type="submit" class="btn-primary font-semibold min-h-12 px-6 rounded-control text-base cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed" {% if not billing_ready or not is_adult %}disabled{% endif %}>Continue to payment</button>
+            </form>
+            {% endfor %}
+            <p class="text-xs text-ink-soft leading-relaxed">Prices are in Indian rupees. You can pay by UPI, card or net banking. No other fees are added at checkout. {{ '[tax treatment, such as GST, to be confirmed with an accountant before launch]' }} See the <a href="{{ url_for('privacy.refunds') }}" class="underline underline-offset-4">Refund Policy</a>.</p>
+        </section>
+        {% endif %}
+
+        <section class="bg-surface border border-line rounded-card p-6 elevate-sm space-y-2" aria-labelledby="costHeading">
+            <h2 id="costHeading" class="text-xl">What things cost</h2>
+            <ul class="text-sm space-y-1 list-disc pl-5">
+                <li>Quiz, Easy or Medium: 1 credit per 10 questions</li>
+                <li>Quiz, Hard: 2 credits per 10 questions</li>
+                <li>Quiz, God mode: 4 credits per 10 questions</li>
+                <li>Flashcard deck: 1 credit</li>
+                <li>SuperNote: 1 credit per page (a photo counts as 1)</li>
+            </ul>
+            <p class="text-xs text-ink-soft">Credits are returned if something fails and you get nothing.</p>
+        </section>
     </div>
+    <script src="{{ url_for('static', filename='js/billing.js') }}"></script>
 
     {% elif view == 'profile' %}
     <div class="bg-surface border border-line rounded-card p-6 elevate-sm space-y-5">
