@@ -54,13 +54,15 @@
 </div>
 
 <aside class="quiz-aside" aria-labelledby="qp-title">
-    <h2 id="qp-title" class="text-lg font-serif font-bold text-plum mb-3">Questions</h2>
-    <nav aria-label="Question palette" data-palette-mount></nav>
+    <div class="quiz-aside-scroll soft-scroll">
+        <h2 id="qp-title" class="text-lg font-serif font-bold text-plum mb-3">Questions</h2>
+        <nav aria-label="Question palette" data-palette-mount></nav>
+    </div>
 </aside>
 </div>
 </div>
 
-<dialog id="palette-sheet" class="qp-sheet" aria-labelledby="qp-sheet-title">
+<dialog id="palette-sheet" class="qp-sheet soft-scroll" aria-labelledby="qp-sheet-title">
     <div class="flex items-center justify-between mb-3">
         <h2 id="qp-sheet-title" class="text-lg font-serif font-bold text-plum">Questions</h2>
         <button type="button" onclick="closePalette()" class="px-4 min-h-11 border border-line text-plum rounded-control text-sm font-semibold cursor-pointer">Close</button>
