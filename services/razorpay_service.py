@@ -17,7 +17,10 @@ class RazorpayError(Exception):
 
 def configured():
     cfg = current_app.config
-    return bool(cfg["BILLING_ENABLED"] and cfg["RAZORPAY_KEY_ID"] and cfg["RAZORPAY_KEY_SECRET"])
+    return bool(
+        cfg["BILLING_ENABLED"] and cfg["RAZORPAY_KEY_ID"] and cfg["RAZORPAY_KEY_SECRET"]
+        and cfg["RAZORPAY_WEBHOOK_SECRET"] and cfg["RAZORPAY_PLAN_PRO"] and cfg["RAZORPAY_PLAN_MAX"]
+    )
 
 
 def _auth():
@@ -70,15 +73,6 @@ def cancel_subscription(subscription_id, at_cycle_end=True):
     })
 
 
-def create_order(amount_paise, receipt, notes):
-    return _request("POST", "/orders", {
-        "amount": amount_paise,
-        "currency": "INR",
-        "receipt": receipt,
-        "notes": notes,
-    })
-
-
 def fetch_payment(payment_id):
     return _request("GET", f"/payments/{payment_id}")
 
@@ -94,14 +88,11 @@ def _hmac_hex(secret, message):
     return hmac.new(secret.encode("utf-8"), message, hashlib.sha256).hexdigest()
 
 
-def verify_checkout_signature(order_or_subscription_id, payment_id, signature, subscription=False):
+def verify_checkout_signature(subscription_id, payment_id, signature):
     secret = current_app.config["RAZORPAY_KEY_SECRET"]
     if not secret or not signature:
         return False
-    if subscription:
-        message = f"{payment_id}|{order_or_subscription_id}"
-    else:
-        message = f"{order_or_subscription_id}|{payment_id}"
+    message = f"{payment_id}|{subscription_id}"
     return hmac.compare_digest(_hmac_hex(secret, message.encode("utf-8")), str(signature))
 
 
