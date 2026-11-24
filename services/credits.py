@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
@@ -6,8 +6,6 @@ from sqlalchemy.exc import IntegrityError
 from extensions import db
 from models import CreditLedger, Subscription, User
 from services import plans
-
-PASS_WINDOW_DAYS = 30
 
 
 class InsufficientCredits(Exception):
@@ -29,9 +27,6 @@ def effective_plan(user, now=None):
 def _period_key(plan, sub, now):
     if plan == "free":
         return f"free-{now.strftime('%Y-%m')}"
-    if sub.billing == "pass" and sub.current_period_start:
-        window = int((now - sub.current_period_start).total_seconds() // (PASS_WINDOW_DAYS * 86400))
-        return f"pass-{sub.id}-{window}"
     start = sub.current_period_start or now
     return f"sub-{sub.id}-{int(start.timestamp())}"
 
@@ -116,7 +111,4 @@ def next_reset(user, now=None):
         year = now.year + (1 if now.month == 12 else 0)
         month = 1 if now.month == 12 else now.month + 1
         return datetime(year, month, 1)
-    if sub.billing == "pass" and sub.current_period_start:
-        windows = int((now - sub.current_period_start).total_seconds() // (PASS_WINDOW_DAYS * 86400)) + 1
-        return min(sub.current_period_start + timedelta(days=PASS_WINDOW_DAYS * windows), sub.current_period_end)
     return sub.current_period_end
