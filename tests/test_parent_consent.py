@@ -132,3 +132,14 @@ def test_pending_routes_require_login(client):
     for path, method in (("/parent-pending", "get"), ("/parent-pending/resend", "post"), ("/parent-pending/change", "post")):
         resp = getattr(client, method)(path)
         assert resp.status_code == 302 and "/login" in resp.headers["Location"]
+
+def test_minor_waiting_for_parent_can_export_and_delete(client):
+    _minor()
+    login(client, "kid@example.com", "Correct-Horse9!")
+    page = client.get("/parent-pending").get_data(as_text=True)
+    assert "Download my data" in page and "Delete my account" in page
+    export = client.post("/account/data/export")
+    assert export.status_code == 200
+    assert "kid@example.com" in export.get_data(as_text=True)
+    wrong = client.post("/account/delete", data={"password": "wrong"})
+    assert wrong.status_code == 302
