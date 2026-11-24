@@ -14,6 +14,8 @@ from . import billing_bp
 
 logger = logging.getLogger("quizpup")
 
+WEBHOOK_MAX_BYTES = 1024 * 1024
+
 
 @billing_bp.app_context_processor
 def inject_credit_summary():
@@ -34,7 +36,7 @@ def page_context(user):
     credits.ensure_period(user)
     plan, sub = credits.effective_plan(user)
     table = plans.plan_table()
-    renews = bool(sub and plan != "free" and sub.billing == "recurring" and not sub.cancel_at_period_end and sub.status == "active")
+    renews = bool(sub and plan != "free" and not sub.cancel_at_period_end and sub.status == "active")
     offers = []
     for key in ("pro", "max"):
         offers.append({
@@ -42,8 +44,6 @@ def page_context(user):
             "name": table[key]["name"],
             "credits": table[key]["credits"],
             "monthly": table[key]["price_inr"],
-            "pass3": plans.pass_paise(key, 3) // 100,
-            "pass6": plans.pass_paise(key, 6) // 100,
         })
     return {
         "billing_ready": billing_service.billing_ready(),
@@ -56,7 +56,6 @@ def page_context(user):
         "free_credits": table["free"]["credits"],
         "offers": offers,
         "is_adult": user.age_group == "adult",
-        "pass_days": {"pass3": 3 * plans.PASS_DAYS_PER_MONTH, "pass6": 6 * plans.PASS_DAYS_PER_MONTH},
     }
 
 
@@ -66,7 +65,7 @@ def page_context(user):
 def checkout():
     data = request.get_json(silent=True) or {}
     try:
-        payload = billing_service.start_checkout(current_user, data.get('plan'), data.get('billing'))
+        payload = billing_service.start_checkout(current_user, data.get('plan'))
     except BillingError as exc:
         return _error(exc)
     return jsonify({"success": True, **payload})
@@ -78,16 +77,11 @@ def checkout():
 def verify():
     data = request.get_json(silent=True) or {}
     try:
-        if data.get('razorpay_subscription_id'):
-            billing_service.verify_subscription_payment(
-                current_user, data['razorpay_subscription_id'],
-                data.get('razorpay_payment_id', ''), data.get('razorpay_signature', ''))
-        elif data.get('razorpay_order_id'):
-            billing_service.verify_order_payment(
-                current_user, data['razorpay_order_id'],
-                data.get('razorpay_payment_id', ''), data.get('razorpay_signature', ''))
-        else:
+        if not data.get('razorpay_subscription_id'):
             raise BillingError("Payment could not be verified.", 400)
+        billing_service.verify_subscription_payment(
+            current_user, data['razorpay_subscription_id'],
+            data.get('razorpay_payment_id', ''), data.get('razorpay_signature', ''))
     except BillingError as exc:
         return _error(exc)
     plan, _ = credits.effective_plan(current_user)
@@ -119,6 +113,8 @@ def cancel():
 @csrf.exempt
 @limiter.exempt
 def webhook():
+    if request.content_length is not None and request.content_length > WEBHOOK_MAX_BYTES:
+        return jsonify({"status": "invalid"}), 413
     raw = request.get_data()
     signature = request.headers.get('X-Razorpay-Signature', '')
     event_id = request.headers.get('X-Razorpay-Event-Id', '')

@@ -72,10 +72,9 @@ class Config:
     RAZORPAY_PLAN_PRO = os.environ.get('RAZORPAY_PLAN_PRO', '')
     RAZORPAY_PLAN_MAX = os.environ.get('RAZORPAY_PLAN_MAX', '')
     BILLING_ENABLED = os.environ.get('BILLING_ENABLED', 'false').lower() == 'true'
-    FREE_CREDITS = int(os.environ.get('FREE_CREDITS', '15'))
+    FREE_CREDITS = int(os.environ.get('FREE_CREDITS', '10'))
     PRO_PRICE_INR = int(os.environ.get('PRO_PRICE_INR', '399'))
     PRO_CREDITS = int(os.environ.get('PRO_CREDITS', '200'))
     MAX_PRICE_INR = int(os.environ.get('MAX_PRICE_INR', '799'))
     MAX_CREDITS = int(os.environ.get('MAX_CREDITS', '500'))
-    PASS_DISCOUNT_PERCENT = int(os.environ.get('PASS_DISCOUNT_PERCENT', '0'))
     RENEWAL_REMINDER_DAYS = int(os.environ.get('RENEWAL_REMINDER_DAYS', '3'))
