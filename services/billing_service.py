@@ -60,7 +60,7 @@ def _require_no_active_plan(user):
         raise BillingError("You already have an active plan. You can buy again when it ends.", 409)
 
 
-def start_checkout(user, plan, billing):
+def start_checkout(user, plan):
     _require_ready()
     _require_adult(user)
     if plan not in ("pro", "max"):
@@ -68,55 +68,32 @@ def start_checkout(user, plan, billing):
     _require_no_active_plan(user)
     cfg = current_app.config
     prefill = {"name": f"{user.first_name} {user.last_name}".strip(), "email": user.email}
-    if billing == "monthly":
-        plan_id = razorpay_service.plan_id_for(plan)
-        if not plan_id:
-            raise BillingError("This plan is not available yet.", 503)
-        try:
-            remote_plan = razorpay_service.fetch_plan(plan_id)
-            if int(remote_plan.get("item", {}).get("amount", -1)) != plans.monthly_paise(plan):
-                logger.error("Razorpay plan amount does not match configured price for %s", plan)
-                raise BillingError("This plan is not available right now.", 503)
-            remote = razorpay_service.create_subscription(
-                plan_id, RECURRING_TOTAL_COUNT, {"user_id": str(user.id), "plan": plan}
-            )
-        except RazorpayError as exc:
-            raise BillingError(str(exc), 502)
-        sub = Subscription.query.filter_by(user_id=user.id).first()
-        if sub is None:
-            sub = Subscription(user_id=user.id, plan=plan, billing="recurring")
-            db.session.add(sub)
-        sub.plan = plan
-        sub.billing = "recurring"
-        sub.status = "created"
-        sub.provider_subscription_id = remote["id"]
-        sub.cancel_at_period_end = False
-        db.session.commit()
-        return {
-            "kind": "subscription", "key_id": cfg["RAZORPAY_KEY_ID"],
-            "subscription_id": remote["id"], "prefill": prefill,
-            "description": f"QuizPup {plans.display_name(plan)}, renews monthly",
-        }
-    months = plans.PASS_MONTHS.get(billing)
-    if not months:
-        raise BillingError("Unknown billing option.")
-    amount = plans.pass_paise(plan, months)
+    plan_id = razorpay_service.plan_id_for(plan)
     try:
-        order = razorpay_service.create_order(
-            amount, f"qp-{user.id}-{int(datetime.utcnow().timestamp())}",
-            {"user_id": str(user.id), "plan": plan, "months": str(months)},
+        remote_plan = razorpay_service.fetch_plan(plan_id)
+        if int(remote_plan.get("item", {}).get("amount", -1)) != plans.monthly_paise(plan):
+            logger.error("Razorpay plan amount does not match configured price for %s", plan)
+            raise BillingError("This plan is not available right now.", 503)
+        remote = razorpay_service.create_subscription(
+            plan_id, RECURRING_TOTAL_COUNT, {"user_id": str(user.id), "plan": plan}
         )
     except RazorpayError as exc:
         raise BillingError(str(exc), 502)
-    db.session.add(Payment(
-        user_id=user.id, provider_order_id=order["id"], plan=plan, billing="pass",
-        months=months, amount_paise=amount, status="created",
-    ))
+    sub = Subscription.query.filter_by(user_id=user.id).first()
+    if sub is None:
+        sub = Subscription(user_id=user.id, plan=plan, billing="recurring")
+        db.session.add(sub)
+    sub.plan = plan
+    sub.billing = "recurring"
+    sub.status = "created"
+    sub.provider_subscription_id = remote["id"]
+    sub.cancel_at_period_end = False
     db.session.commit()
     return {
-        "kind": "order", "key_id": cfg["RAZORPAY_KEY_ID"], "order_id": order["id"],
-        "amount": amount, "prefill": prefill,
-        "description": f"QuizPup {plans.display_name(plan)}, {months * plans.PASS_DAYS_PER_MONTH}-day pass, no auto-renewal",
+        "key_id": cfg["RAZORPAY_KEY_ID"],
+        "subscription_id": remote["id"],
+        "prefill": prefill,
+        "description": f"QuizPup {plans.display_name(plan)}, renews monthly",
     }
 
 
@@ -149,7 +126,7 @@ def _record_subscription_payment(sub, payment_entity):
 
 
 def verify_subscription_payment(user, subscription_id, payment_id, signature):
-    if not razorpay_service.verify_checkout_signature(subscription_id, payment_id, signature, subscription=True):
+    if not razorpay_service.verify_checkout_signature(subscription_id, payment_id, signature):
         raise BillingError("Payment could not be verified.", 400)
     sub = Subscription.query.filter_by(user_id=user.id, provider_subscription_id=subscription_id).first()
     if sub is None:
@@ -158,60 +135,16 @@ def verify_subscription_payment(user, subscription_id, payment_id, signature):
         entity = razorpay_service.fetch_subscription(subscription_id)
     except RazorpayError as exc:
         raise BillingError(str(exc), 502)
+    if entity.get("id") != subscription_id:
+        raise BillingError("Payment could not be verified.", 400)
     apply_subscription_entity(sub, entity)
     return sub
-
-
-def activate_pass(payment, provider_payment_id):
-    if payment.status == "captured":
-        return False
-    now = datetime.utcnow()
-    payment.provider_payment_id = provider_payment_id
-    payment.status = "captured"
-    sub = Subscription.query.filter_by(user_id=payment.user_id).first()
-    if sub is None:
-        sub = Subscription(user_id=payment.user_id, plan=payment.plan, billing="pass")
-        db.session.add(sub)
-    sub.plan = payment.plan
-    sub.billing = "pass"
-    sub.status = "active"
-    sub.provider_subscription_id = None
-    sub.cancel_at_period_end = False
-    sub.current_period_start = now
-    sub.current_period_end = now + timedelta(days=payment.months * plans.PASS_DAYS_PER_MONTH)
-    db.session.commit()
-    user = db.session.get(User, payment.user_id)
-    if user:
-        credits.ensure_period(user, now)
-        sync_user_label(user)
-    return True
-
-
-def verify_order_payment(user, order_id, payment_id, signature):
-    if not razorpay_service.verify_checkout_signature(order_id, payment_id, signature):
-        raise BillingError("Payment could not be verified.", 400)
-    payment = Payment.query.filter_by(provider_order_id=order_id, user_id=user.id).first()
-    if payment is None:
-        raise BillingError("Payment could not be verified.", 400)
-    try:
-        remote = razorpay_service.fetch_payment(payment_id)
-    except RazorpayError as exc:
-        raise BillingError(str(exc), 502)
-    if remote.get("order_id") != order_id or int(remote.get("amount", -1)) != payment.amount_paise:
-        logger.error("Payment verification mismatch for order %s", order_id)
-        raise BillingError("Payment could not be verified.", 400)
-    if remote.get("status") != "captured":
-        return payment, False
-    activate_pass(payment, payment_id)
-    return payment, True
 
 
 def request_cancel(user):
     plan, sub = credits.effective_plan(user)
     if sub is None or plan == "free":
         raise BillingError("You have no active plan to cancel.", 409)
-    if sub.billing == "pass":
-        raise BillingError("Your pass does not renew, so there is nothing to cancel. It ends on its date.", 409)
     if sub.cancel_at_period_end:
         return sub
     _require_ready()
@@ -251,6 +184,44 @@ def _handle_refund(event):
         sync_user_label(user)
 
 
+def _adopt_orphan_subscription(entity):
+    notes = entity.get("notes") or {}
+    try:
+        user_id = int(notes.get("user_id"))
+    except (TypeError, ValueError):
+        return None
+    plan = notes.get("plan")
+    if plan not in ("pro", "max") or entity.get("status") not in ("active", "authenticated"):
+        return None
+    user = db.session.get(User, user_id)
+    if user is None:
+        return None
+    new_id = entity.get("id")
+    current_plan, existing = credits.effective_plan(user)
+    if current_plan != "free":
+        logger.error("A second subscription was paid for user_id=%s; cancelling it, refund needed", user_id)
+        try:
+            razorpay_service.cancel_subscription(new_id, at_cycle_end=False)
+        except RazorpayError:
+            logger.error("Could not cancel the duplicate provider subscription")
+        return None
+    old_id = existing.provider_subscription_id if existing else None
+    if existing is None:
+        existing = Subscription(user_id=user_id, plan=plan, billing="recurring")
+        db.session.add(existing)
+    existing.plan = plan
+    existing.billing = "recurring"
+    existing.provider_subscription_id = new_id
+    existing.cancel_at_period_end = False
+    db.session.commit()
+    if old_id and old_id != new_id:
+        try:
+            razorpay_service.cancel_subscription(old_id, at_cycle_end=False)
+        except RazorpayError:
+            logger.warning("Could not cancel a superseded provider subscription")
+    return existing
+
+
 def handle_webhook(event_id, event):
     try:
         db.session.add(PaymentEvent(event_id=event_id, event_type=str(event.get("event", ""))[:60]))
@@ -264,6 +235,8 @@ def handle_webhook(event_id, event):
         entity = body.get("subscription", {}).get("entity", {})
         sub = Subscription.query.filter_by(provider_subscription_id=entity.get("id")).first()
         if sub is None:
+            sub = _adopt_orphan_subscription(entity)
+        if sub is None:
             logger.warning("Webhook for an unknown subscription ignored")
             return "ignored"
         apply_subscription_entity(sub, entity)
@@ -271,14 +244,6 @@ def handle_webhook(event_id, event):
         if kind == "subscription.charged" and payment_entity:
             _record_subscription_payment(sub, payment_entity)
         return "ok"
-    if kind in ("payment.captured", "order.paid"):
-        entity = body.get("payment", {}).get("entity", {})
-        order_id = entity.get("order_id")
-        payment = Payment.query.filter_by(provider_order_id=order_id).first() if order_id else None
-        if payment and int(entity.get("amount", -1)) == payment.amount_paise:
-            activate_pass(payment, entity.get("id"))
-            return "ok"
-        return "ignored"
     if kind in ("refund.processed", "refund.created"):
         _handle_refund(event)
         return "ok"
@@ -324,7 +289,7 @@ def send_renewal_reminders(now=None, sender=None):
             continue
         name = plans.display_name(sub.plan)
         end = sub.current_period_end.strftime("%d %B %Y")
-        renews = sub.billing == "recurring" and not sub.cancel_at_period_end and sub.status == "active"
+        renews = not sub.cancel_at_period_end and sub.status == "active"
         if renews:
             subject = f"Your QuizPup {name} plan renews on {end}"
             line = (f"Your {name} plan renews on {end} for {_inr(plans.monthly_paise(sub.plan))}. "
