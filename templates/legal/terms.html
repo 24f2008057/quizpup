@@ -31,7 +31,7 @@
 
 <section class="space-y-2">
     <h2 class="text-xl">Plans and payments</h2>
-    <p class="text-sm leading-relaxed">QuizPup has a Free plan and paid plans (Pro and Max). Each plan gives a number of credits a month, and quizzes, flashcards and notes use credits as shown on the Premium page. Unused credits do not carry over. If something fails and you receive nothing, the credits are returned. Paid plans renew automatically every month through autopay (UPI AutoPay, card or e-mandate) until you cancel. Before you pay we show the price, what you get and that it renews. Prices are in Indian rupees with no extra fees added at checkout. You can cancel renewal any time from the Premium page, or stop the autopay with your bank; you keep the plan until the end of the period you paid for. Refunds are covered in the {{ link('privacy.refunds', 'Refund Policy') }}. {{ todo('tax treatment such as GST; and lawyer review of auto-renewal wording and RBI recurring-payment rules') }}</p>
+    <p class="text-sm leading-relaxed">QuizPup has a Free plan and paid plans (Pro and Max). Each plan gives a number of credits a month, and quizzes, flashcards and notes use credits as shown on the Premium page. Unused credits do not carry over. If something fails and you receive nothing, the credits are returned. Paid plans renew automatically every month through autopay (UPI AutoPay, card or e-mandate) until you cancel. Before you pay we show the price, what you get and that it renews. Prices are in Indian rupees with no extra fees added at checkout. You can cancel renewal any time from the Premium page, or stop the autopay with your bank; you keep the plan until the end of the period you paid for. Refunds are covered in the {{ link('privacy.refunds', 'Refund Policy') }}. The operator is not registered for GST, so no GST is added to prices. {{ todo('accountant to confirm the tax position, and lawyer review of auto-renewal wording and RBI recurring-payment rules') }}</p>
 </section>
 
 <section class="space-y-2">
@@ -51,7 +51,7 @@
 
 <section class="space-y-2">
     <h2 class="text-xl">Changes, law and disputes</h2>
-    <p class="text-sm leading-relaxed">If we change these terms in a material way we will update the version above and ask you to accept again. These terms are governed by the laws of {{ ph(legal.law, 'governing law, for example India') }}, and disputes go to the courts of {{ ph(legal.court_place, 'city for courts') }}. {{ todo('lawyer to confirm, and to decide whether to add mediation or arbitration') }}</p>
+    <p class="text-sm leading-relaxed">If we change these terms in a material way we will update the version above and ask you to accept again. These terms are governed by the laws of {{ ph(legal.law, 'governing law, for example India') }}, and disputes go to the courts of {{ legal.court_place }}{% if not legal.court_place %}the place with jurisdiction under that law; no particular city has been chosen{% endif %}. {{ todo('lawyer to confirm, to choose a court city if wanted, and to decide whether to add mediation or arbitration') }}</p>
 </section>
 
 <section class="space-y-2">
