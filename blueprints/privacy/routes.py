@@ -27,7 +27,7 @@ GATE_EXEMPT_ENDPOINTS = {
     'privacy.privacy_policy', 'privacy.terms', 'privacy.subprocessors',
     'privacy.cookies', 'privacy.refunds', 'privacy.contact', 'privacy.about',
     'privacy.parent_confirm', 'privacy.parent_pending', 'privacy.parent_resend',
-    'privacy.parent_change',
+    'privacy.parent_change', 'privacy.export_data', 'privacy.delete_account',
 }
 
 
@@ -213,7 +213,7 @@ def stamp_last_login(sender, user):
 LEGAL_REQUIRED_SETTINGS = (
     'LEGAL_ENTITY_NAME', 'LEGAL_ADDRESS', 'SUPPORT_EMAIL', 'PRIVACY_CONTACT_EMAIL',
     'GRIEVANCE_OFFICER_NAME', 'GRIEVANCE_OFFICER_EMAIL', 'LEGAL_REPLY_TIME',
-    'LEGAL_GOVERNING_LAW', 'LEGAL_COURT_PLACE', 'LEGAL_EFFECTIVE_DATE',
+    'LEGAL_GOVERNING_LAW', 'LEGAL_EFFECTIVE_DATE',
 )
 
 
