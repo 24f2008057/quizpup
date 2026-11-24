@@ -29,18 +29,6 @@
         });
     }
 
-    function summary(form) {
-        var billing = form.querySelector('input[type=radio]:checked').value;
-        var name = form.dataset.name;
-        var out = form.querySelector('[data-summary]');
-        if (billing === 'monthly') {
-            out.textContent = 'You pay ₹' + form.dataset.monthly + ' today and ₹' + form.dataset.monthly + ' every month until you cancel.';
-        } else {
-            out.textContent = 'You pay ₹' + form.dataset[billing] + ' once for ' + form.dataset[billing + 'Days'] + ' days of ' + name + '. It does not renew.';
-        }
-        return billing;
-    }
-
     function finish(ok) {
         if (ok) {
             say('Payment received. Updating your plan…', false);
@@ -57,10 +45,9 @@
     }
 
     function startPayment(form, button) {
-        var billing = summary(form);
         button.disabled = true;
         say('Preparing your payment…', false);
-        postJson('/billing/checkout', { plan: form.dataset.plan, billing: billing }).then(function (res) {
+        postJson('/billing/checkout', { plan: form.dataset.plan }).then(function (res) {
             if (!res.ok) throw new Error(res.data.error || 'Could not start the payment.');
             return loadCheckout().then(function () { return res.data; });
         }).then(function (d) {
@@ -79,8 +66,7 @@
                     }).catch(function () { poll(10); });
                 }
             };
-            if (d.kind === 'subscription') options.subscription_id = d.subscription_id;
-            else { options.order_id = d.order_id; options.amount = d.amount; options.currency = 'INR'; }
+            options.subscription_id = d.subscription_id;
             var rz = new window.Razorpay(options);
             rz.on('payment.failed', function () {
                 button.disabled = false;
@@ -94,8 +80,6 @@
     }
 
     Array.prototype.forEach.call(root.querySelectorAll('form[data-plan]'), function (form) {
-        summary(form);
-        form.addEventListener('change', function () { summary(form); });
         form.addEventListener('submit', function (e) {
             e.preventDefault();
             if (root.dataset.ready !== 'true' || root.dataset.adult !== 'true') return;
