@@ -6,19 +6,27 @@ PAGES = ("/privacy", "/terms", "/cookies", "/refunds", "/contact")
 
 
 @pytest.mark.parametrize("path", PAGES)
-def test_each_legal_page_is_public_titled_and_marked_as_draft(client, path):
+def test_each_legal_page_is_public_and_titled(client, path):
     resp = client.get(path)
     assert resp.status_code == 200
     html = resp.get_data(as_text=True)
     assert "<h1" in html
-    assert "has not been reviewed by a lawyer" in html
+    assert "has not been reviewed by a lawyer" not in html
+    assert "bg-warning-bg" not in html
     assert 'aria-label="Other legal pages"' in html
 
 
 @pytest.mark.parametrize("path", PAGES)
-def test_unset_business_details_show_as_placeholders_not_invented_values(client, path):
+def test_pages_show_no_placeholder_marks(client, path):
     html = client.get(path).get_data(as_text=True)
-    assert "[" in html and "bg-warning-bg" in html
+    assert "<mark" not in html
+
+
+def test_default_contact_details_are_shown_on_the_contact_page(client):
+    html = client.get("/contact").get_data(as_text=True)
+    for value in ("Sanjoy Ostad", "Hazaribag", "quizpupcc@gmail.com", "grievance.quizpup@gmail.com", "3 days"):
+        assert value in html
+    assert "no business is registered" not in html
 
 
 def test_business_details_appear_when_configured(app, client, monkeypatch):
@@ -29,7 +37,6 @@ def test_business_details_appear_when_configured(app, client, monkeypatch):
         GRIEVANCE_OFFICER_NAME="A. Officer",
         GRIEVANCE_OFFICER_EMAIL="grievance@example.com",
         LEGAL_REPLY_TIME="5 working days",
-        LEGAL_REVIEWED_BY_LAWYER=True,
         LEGAL_EFFECTIVE_DATE="1 January 2027",
     )
     for key, value in values.items():
@@ -45,12 +52,6 @@ def test_cookie_policy_lists_every_cookie_the_app_sets(client):
     html = client.get("/cookies").get_data(as_text=True)
     for name in ("session (cookie)", "remember_token", "quizpup_consent", "isLoggedIn"):
         assert name in html
-
-
-def test_uptime_is_not_promised_without_measurement(client):
-    html = client.get("/terms").get_data(as_text=True)
-    assert "have not measured or committed to an uptime percentage" in html
-    assert "99." not in html
 
 
 def test_privacy_page_ai_wording_follows_gemini_tier(app, client, monkeypatch):
@@ -87,7 +88,7 @@ def test_every_legal_page_has_a_back_link_and_a_single_link_strip(client, path):
     html = client.get(path).get_data(as_text=True)
     assert 'class="back-link"' in html and "data-back-any" in html
     assert html.count('aria-label="Legal"') == 0
-    assert html.count('aria-label="Other legal pages"') == 1 or path == "/subprocessors"
+    assert html.count('aria-label="Other legal pages"') == 1
 
 
 def test_signed_in_account_menu_links_about_and_privacy_terms(client):
@@ -98,7 +99,25 @@ def test_signed_in_account_menu_links_about_and_privacy_terms(client):
     assert client.get("/about").status_code == 200
 
 
-def test_legal_check_command_fails_until_everything_is_set(app):
+def test_legal_check_command_fails_until_everything_is_set(app, monkeypatch):
+    monkeypatch.setitem(app.config, "LEGAL_ENTITY_NAME", "")
     result = app.test_cli_runner().invoke(args=["legal-check"])
     assert result.exit_code == 1
     assert "missing: LEGAL_ENTITY_NAME" in result.output
+
+
+def test_legal_check_passes_when_everything_is_set(app):
+    result = app.test_cli_runner().invoke(args=["legal-check"])
+    assert result.exit_code == 0
+
+
+def test_subprocessors_page_links_the_other_legal_pages(client):
+    html = client.get("/subprocessors").get_data(as_text=True)
+    for href in ("/about", "/privacy", "/terms", "/cookies", "/refunds", "/contact"):
+        assert f'href="{href}"' in html
+
+
+def test_terms_make_no_uptime_promise(client):
+    html = client.get("/terms").get_data(as_text=True).lower()
+    assert "uptime" not in html and "99." not in html
+    assert "without any promise that it will always be available" in html
