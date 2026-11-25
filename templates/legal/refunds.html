@@ -6,7 +6,7 @@
 {% block doc_body %}
 <section class="space-y-2">
     <h2 class="text-xl">Current status</h2>
-    <p class="text-sm leading-relaxed">QuizPup has no paid plans yet, so there is nothing to refund today. This page sets out how refunds will work when paid plans launch.</p>
+    <p class="text-sm leading-relaxed">{% if config['BILLING_ENABLED'] %}This page explains how refunds work for paid plans.{% else %}QuizPup has no paid plans yet, so there is nothing to refund today. This page sets out how refunds will work when paid plans launch.{% endif %}</p>
 </section>
 
 <section class="space-y-2">
@@ -14,11 +14,11 @@
     <ul class="text-sm leading-relaxed list-disc pl-5 space-y-1">
         <li>Refund window for a first purchase: 3 days from the payment.</li>
         <li>Renewals: a renewal can be refunded within 3 days of the renewal payment.</li>
-        <li>Cancelling, in QuizPup or by stopping the autopay with your bank, stops future renewals. You keep access until the end of the period you paid for. {{ todo('confirm once the payment provider flow is built') }}</li>
+        <li>Cancelling, in QuizPup or by stopping the autopay with your bank, stops future renewals. You keep access until the end of the period you paid for.</li>
         <li>Refunds go back to the original payment method, including UPI, within 7 business days of us approving the refund.</li>
         <li>If you were charged by mistake or twice, we will refund it in full.</li>
         <li>How to ask: use the {{ link('privacy.contact', 'Contact page') }} and include the email on your account.</li>
     </ul>
-    <p class="text-sm leading-relaxed">{{ todo('lawyer to check this against Indian consumer-protection rules, the payment provider\'s terms, and RBI rules on recurring payments, and to say what cannot be refunded and why') }}</p>
+    <p class="text-sm leading-relaxed"></p>
 </section>
 {% endblock %}
