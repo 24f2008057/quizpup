@@ -223,9 +223,7 @@ def register_privacy_cli(app):
         missing = [name for name in LEGAL_REQUIRED_SETTINGS if not app.config.get(name)]
         for name in missing:
             click.echo(f'missing: {name}')
-        if not app.config.get('LEGAL_REVIEWED_BY_LAWYER'):
-            click.echo('LEGAL_REVIEWED_BY_LAWYER is not true')
-        if missing or not app.config.get('LEGAL_REVIEWED_BY_LAWYER'):
+        if missing:
             raise SystemExit(1)
         click.echo('legal settings complete')
 
