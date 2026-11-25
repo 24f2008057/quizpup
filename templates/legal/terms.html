@@ -6,12 +6,12 @@
 {% block doc_body %}
 <section class="space-y-2">
     <h2 class="text-xl">About these terms</h2>
-    <p class="text-sm leading-relaxed">These terms are between you and {{ ph(legal.entity, 'legal name of the operator; no business is registered yet') }} ("QuizPup", "we"), {{ ph(legal.address, 'address') }}. By creating an account or using QuizPup you agree to them and to the {{ link('privacy.privacy_policy', 'Privacy Policy') }}.</p>
+    <p class="text-sm leading-relaxed">These terms are between you and {{ legal.entity }} ("QuizPup", "we"), {{ legal.address }}. By creating an account or using QuizPup you agree to them and to the {{ link('privacy.privacy_policy', 'Privacy Policy') }}.</p>
 </section>
 
 <section class="space-y-2">
     <h2 class="text-xl">Who can use QuizPup</h2>
-    <p class="text-sm leading-relaxed">You must give true details when you sign up and keep your password private. If you are under 18, a parent or guardian must approve your account by email before you can use QuizPup. {{ todo('lawyer to confirm the age rules, including whether under-18 users should be allowed at all given Google\'s Gemini terms') }}</p>
+    <p class="text-sm leading-relaxed">You must give true details when you sign up and keep your password private. If you are under 18, a parent or guardian must approve your account by email before you can use QuizPup.</p>
 </section>
 
 <section class="space-y-2">
@@ -21,7 +21,7 @@
 
 <section class="space-y-2">
     <h2 class="text-xl">Your content</h2>
-    <p class="text-sm leading-relaxed">You keep ownership of what you type and upload. You give us permission to store it and to send it to our providers (see the {{ link('privacy.subprocessors', 'sub-processors') }}) only to run QuizPup for you. Only upload material you have the right to use. {{ todo('lawyer to word the licence, and to say who owns AI-generated output') }}</p>
+    <p class="text-sm leading-relaxed">You keep ownership of what you type and upload. You give us permission to store it and to send it to our providers (see the {{ link('privacy.subprocessors', 'sub-processors') }}) only to run QuizPup for you. Only upload material you have the right to use.</p>
 </section>
 
 <section class="space-y-2">
@@ -31,27 +31,27 @@
 
 <section class="space-y-2">
     <h2 class="text-xl">Plans and payments</h2>
-    <p class="text-sm leading-relaxed">QuizPup has a Free plan and paid plans (Pro and Max). Each plan gives a number of credits a month, and quizzes, flashcards and notes use credits as shown on the Premium page. Unused credits do not carry over. If something fails and you receive nothing, the credits are returned. Paid plans renew automatically every month through autopay (UPI AutoPay, card or e-mandate) until you cancel. Before you pay we show the price, what you get and that it renews. Prices are in Indian rupees with no extra fees added at checkout. You can cancel renewal any time from the Premium page, or stop the autopay with your bank; you keep the plan until the end of the period you paid for. Refunds are covered in the {{ link('privacy.refunds', 'Refund Policy') }}. The operator is not registered for GST, so no GST is added to prices. {{ todo('accountant to confirm the tax position, and lawyer review of auto-renewal wording and RBI recurring-payment rules') }}</p>
+    <p class="text-sm leading-relaxed">QuizPup has a Free plan and paid plans (Pro and Max). Each plan gives a number of credits a month, and quizzes, flashcards and notes use credits as shown on the Premium page. Unused credits do not carry over. If something fails and you receive nothing, the credits are returned. Paid plans renew automatically every month through autopay (UPI AutoPay, card or e-mandate) until you cancel. Before you pay we show the price, what you get and that it renews. Prices are in Indian rupees with no extra fees added at checkout. You can cancel renewal any time from the Premium page, or stop the autopay with your bank; you keep the plan until the end of the period you paid for. Refunds are covered in the {{ link('privacy.refunds', 'Refund Policy') }}. The operator is not registered for GST, so no GST is added to prices.</p>
 </section>
 
 <section class="space-y-2">
     <h2 class="text-xl">Availability</h2>
-    <p class="text-sm leading-relaxed">We work to keep QuizPup running, but we do not promise it will always be available or error-free, and we have not measured or committed to an uptime percentage. It may be slow or briefly offline during updates, outages at our providers, or after a period of no use. {{ todo('hosting plan: confirm whether the service sleeps when idle') }} {{ todo('target uptime figure; set it only after load testing in Workstream 11 shows it can be met, and decide whether it is a goal or a promise') }}</p>
+    <p class="text-sm leading-relaxed">QuizPup is provided without any promise that it will always be available or free of errors. It may be slow or offline at times.</p>
 </section>
 
 <section class="space-y-2">
     <h2 class="text-xl">Ending your account</h2>
-    <p class="text-sm leading-relaxed">You can delete your account at any time from your Profile page. We may suspend or close an account that breaks these terms. {{ todo('lawyer to add notice period and what happens to paid time left') }}</p>
+    <p class="text-sm leading-relaxed">You can delete your account at any time from your Profile page. We may suspend or close an account that breaks these terms.</p>
 </section>
 
 <section class="space-y-2">
     <h2 class="text-xl">Our responsibility</h2>
-    <p class="text-sm leading-relaxed">QuizPup is provided "as is". {{ todo('lawyer to write the disclaimer and limit of liability that is valid under Indian law, including the carve-outs consumer law does not allow us to exclude') }}</p>
+    <p class="text-sm leading-relaxed">QuizPup is provided "as is" and "as available". Apart from the refunds described in the {{ link('privacy.refunds', 'Refund Policy') }} and our handling of your personal data as described in the {{ link('privacy.privacy_policy', 'Privacy Policy') }}, we are not responsible for any loss or damage from using QuizPup, including wrong or incomplete AI answers, exam results, downtime, or lost content. This does not take away any right the law gives you that cannot be excluded.</p>
 </section>
 
 <section class="space-y-2">
     <h2 class="text-xl">Changes, law and disputes</h2>
-    <p class="text-sm leading-relaxed">If we change these terms in a material way we will update the version above and ask you to accept again. These terms are governed by the laws of {{ ph(legal.law, 'governing law, for example India') }}, and disputes go to the courts of {{ legal.court_place }}{% if not legal.court_place %}the place with jurisdiction under that law; no particular city has been chosen{% endif %}. {{ todo('lawyer to confirm, to choose a court city if wanted, and to decide whether to add mediation or arbitration') }}</p>
+    <p class="text-sm leading-relaxed">If we change these terms in a material way we will update the version above and ask you to accept again. These terms are governed by the laws of {{ legal.law }}.{% if legal.court_place %} Disputes go to the courts of {{ legal.court_place }}.{% endif %}</p>
 </section>
 
 <section class="space-y-2">
